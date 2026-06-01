@@ -1,0 +1,68 @@
+@import './variables.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  font-family: theme('fontFamily.sans');
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar);
+  border-radius: 4px;
+}
+
+/* Syntax Highlighting */
+.syntax-kw {
+  color: var(--keyword);
+  font-weight: 600;
+}
+
+.syntax-str {
+  color: var(--string);
+}
+
+.syntax-cmt {
+  color: var(--comment);
+  font-style: italic;
+}
+
+.syntax-num {
+  color: var(--number);
+}
+
+.syntax-fn {
+  color: var(--fn);
+}
+
+.syntax-type {
+  color: var(--type);
+}

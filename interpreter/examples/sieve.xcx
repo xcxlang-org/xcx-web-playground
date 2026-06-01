@@ -1,0 +1,25 @@
+--- Sieve of Eratosthenes
+
+const i: LIMIT = 50;
+array:b: sieve;
+
+for i in 0 to LIMIT do;
+    sieve.push(true);
+end;
+
+for i in 2 to LIMIT do;
+    if (sieve.get(i)) then;
+        i: j = i * 2;
+        while (j <= LIMIT) do;
+            sieve.update(j, false);
+            j = j + i;
+        end;
+    end;
+end;
+
+>! "Prime numbers up to " + s(LIMIT) + ":";
+for i in 2 to LIMIT do;
+    if (sieve.get(i)) then;
+        >! i;
+    end;
+end;

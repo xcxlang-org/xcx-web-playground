@@ -1,0 +1,45 @@
+>! "=== MAP DECLARATIONS ===";
+map: ages {
+    schema = [s <-> i]
+    data = [ "alice" :: 30, "bob" :: 25 ]
+};
+ages.show();
+
+map: scores {
+    schema = [s <=> i]
+    data = [EMPTY]
+};
+scores.show();
+
+map: string_to_string {
+    schema = [s <-> s]
+    data = ["EMPTY" :: "none"]
+};
+string_to_string.show();
+
+>! "=== MAP METHODS ===";
+>! ages.size();
+>! ages.contains("alice");
+>! ages.contains("charlie");
+
+ages.insert("charlie", 40);
+>! ages.size();
+>! ages.get("charlie");
+
+ages.remove("alice");
+>! ages.size();
+
+>! "=== ITERATION / KEYS / VALUES ===";
+array:s: k = ages.keys();
+for x in k do;
+    >! x;
+end;
+
+array:i: v = ages.values();
+for x in v do;
+    >! x;
+end;
+
+>! "=== CLEAR ===";
+ages.clear();
+>! ages.size();

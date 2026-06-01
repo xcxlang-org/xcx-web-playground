@@ -1,0 +1,16 @@
+date: t_start = date.now();
+
+i: count = 0;
+for i in 1 to 100000 do;
+    count = count + 1;
+end;
+
+date: t_end = date.now();
+
+s: ms_start = t_start.format("ms");
+s: ms_end   = t_end.format("ms");
+
+i: elapsed = ms_end.toInt() - ms_start.toInt();
+
+>! "Iteracji: " + s(count);
+>! "Czas: " + s(elapsed) + " ms";

@@ -1,0 +1,45 @@
+--- tests/test_sets.xcx
+
+>! "=== SET DECLARATIONS ===";
+
+set:N: small {1, 2, 3, 4, 5};
+small.show();
+
+set:N: evens {0,,10 @step 2};
+evens.show();
+
+set:S: colors {"red", "green", "blue", "red"}; --- duplicates ignored
+colors.show();
+
+set:C: letters {"A",,"E"};
+letters.show();
+
+>! "=== METHODS ===";
+>! small.size();
+>! small.isEmpty();
+>! small.contains(3);
+>! small.contains(99);
+small.add(6);
+small.show();
+small.remove(1);
+small.show();
+
+>! "=== SET OPERATIONS ===";
+set:N: setA {1, 2, 3, 4, 5};
+set:N: setB {3, 4, 5, 6, 7};
+
+set:N: u  = setA UNION setB;
+set:N: i  = setA INTERSECTION setB;
+set:N: d  = setA DIFFERENCE setB;
+
+u.show();
+i.show();
+d.show();
+
+>! "=== ITERATION ===";
+set:N: loop_set {10, 20, 30};
+for p in loop_set do;
+    >! p;
+end;
+
+>! "=== END ===";

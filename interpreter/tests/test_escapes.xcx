@@ -1,0 +1,6 @@
+>! "Line 1\nLine 2";
+>! "Tabs\tare\tcool";
+>! "Hex \x41\x42\x43";
+>! "Octal \101\102\103";
+>! "Back \\ slash";
+>! "\"double quotes\"";

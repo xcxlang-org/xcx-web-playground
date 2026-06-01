@@ -1,0 +1,15 @@
+--- tests/test_include.xcx
+
+>! "=== BASIC INCLUDE ===";
+include "math";
+
+>! PI;
+>! sqrt_f(16.0);
+
+>! "=== ALIAS INCLUDE ===";
+include "math" as m;
+
+>! m.PI;
+>! m.sqrt_f(25.0);
+
+>! "=== INCLUDE OK ===";

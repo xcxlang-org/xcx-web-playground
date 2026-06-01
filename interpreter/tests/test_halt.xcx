@@ -1,0 +1,31 @@
+>! "--- START ---";
+
+func perform_alert() {
+    halt.alert >! "This is just a warning!";
+    >! "Continuing execution inside perform_alert()";
+};
+
+func perform_error() {
+    halt.error >! "Critical error occurred! Discarding frame!";
+    >! "THIS TEXT SHOULD NOT APPEAR IF FRAME WAS ABORTED!";
+};
+
+func perform_fatal() {
+    halt.fatal >! "FATAL ERROR. Killing machine.";
+    >! "THIS TEXT WILL NEVER BE VISIBLE";
+};
+
+>! "[1] Alert test:";
+perform_alert();
+>! "[1] alert finished.";
+
+>! "[2] Error test:";
+i: x = 0;
+if (true) then;
+    perform_error(); 
+    >! "[2] error finished, returning to main scope.";
+end;
+
+>! "[3] Fatal test:";
+perform_fatal();
+>! "Called after fatal (WILL NEVER BE PRINTED)";

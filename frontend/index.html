@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <script src="/coi-serviceworker.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xcx playground</title>
+  <meta name="description"
+    content="XCX Language Playground - Write, compile, and run XCX code directly in your browser without any installation." />
+  <meta name="keywords" content="xcx, compiler, programming language, playground, webassembly, rust" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload"
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Code+Pro:wght@400;500;600&display=swap"
+    as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Source+Code+Pro:wght@400;500;600&display=swap">
+  </noscript>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('xcx-theme-preference');
+      var theme = saved || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.style.background = theme === 'light' ? '#ffffff' : '#0a0a0a';
+      document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+    })();
+  </script>
+</head>
+
+<body class="antialiased">
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

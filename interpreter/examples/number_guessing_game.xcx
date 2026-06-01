@@ -1,0 +1,19 @@
+--- Number Guessing Game
+
+const i: SECRET = 42;
+i: guess = 0;
+
+>! "Guess the number (1-100)!";
+
+while (guess != SECRET) do;
+    >! "Enter your guess:";
+    >? guess;
+
+    if (guess < SECRET) then;
+        >! "Too low!";
+    elseif (guess > SECRET) then;
+        >! "Too high!";
+    end;
+end;
+
+>! "Correct! The number was " + s(SECRET);

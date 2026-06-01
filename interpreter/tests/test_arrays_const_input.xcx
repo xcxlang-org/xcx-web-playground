@@ -1,0 +1,332 @@
+--- ============================================================
+--- test_arrays_const_input.xcx
+--- Tests: arrays, constants (const), no shadowing, input
+--- ============================================================
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A1: Deklaracja tablicy i .show()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A1: declaration i show ===";
+
+array:i: nums {10, 20, 30};
+nums.show();
+--- expected: {10, 20, 30}
+
+array:s: words {"hello", "world", "xcx"};
+words.show();
+--- expected: {hello, world, xcx}
+
+array:b: flags {true, false, true};
+flags.show();
+--- expected: {true, false, true}
+
+array:f: fvals {1.1, 2.2, 3.3};
+fvals.show();
+--- expected: {1.1, 2.2, 3.3}
+
+array:i: empty {};
+empty.show();
+--- expected: {}
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A2: .size()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A2: size ===";
+
+>! nums.size();
+--- expected: 3
+
+>! empty.size();
+--- expected: 0
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A3: .get(i)
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A3: get ===";
+
+>! nums.get(0);
+--- expected: 10
+>! nums.get(1);
+--- expected: 20
+>! nums.get(2);
+--- expected: 30
+
+i: first = nums.get(0);
+>! first;
+--- expected: 10
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A4: .push()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A4: push ===";
+
+nums.push(40);
+nums.show();
+--- expected: {10, 20, 30, 40}
+>! nums.size();
+--- expected: 4
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A5: .pop()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A5: pop ===";
+
+i: last = nums.pop();
+>! last;
+--- expected: 40
+nums.show();
+--- expected: {10, 20, 30}
+>! nums.size();
+--- expected: 3
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A6: .insert()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A6: insert ===";
+
+nums.insert(1, 15);
+nums.show();
+--- expected: {10, 15, 20, 30}
+
+nums.insert(0, 5);
+nums.show();
+--- expected: {5, 10, 15, 20, 30}
+
+--- insert na koncu (append)
+nums.insert(5, 99);
+nums.show();
+--- expected: {5, 10, 15, 20, 30, 99}
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A7: .update()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A7: update ===";
+
+nums.update(0, 100);
+nums.show();
+--- expected: {100, 10, 15, 20, 30, 99}
+
+nums.update(5, 0);
+nums.show();
+--- expected: {100, 10, 15, 20, 30, 0}
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A8: .delete()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A8: delete ===";
+
+nums.delete(0);
+nums.show();
+--- expected: {10, 15, 20, 30, 0}
+
+nums.delete(4);
+nums.show();
+--- expected: {10, 15, 20, 30}
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A9: .find() i .contains()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A9: find i contains ===";
+
+>! nums.find(15);
+--- expected: 1
+
+>! nums.find(99);
+--- expected: -1
+
+b: cf1 = nums.contains(20);
+b: cf2 = nums.contains(99);
+>! cf1;
+--- expected: true
+>! cf2;
+--- expected: false
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A10: .isEmpty() i .clear()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A10: isEmpty i clear ===";
+
+>! nums.isEmpty();
+--- expected: false
+
+>! empty.isEmpty();
+--- expected: true
+
+nums.clear();
+>! nums.isEmpty();
+--- expected: true
+>! nums.size();
+--- expected: 0
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A11: .sort() i .reverse()
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A11: sort i reverse ===";
+
+array:i: sortme {5, 2, 8, 1, 9, 3};
+sortme.sort();
+sortme.show();
+--- expected: {1, 2, 3, 5, 8, 9}
+
+sortme.reverse();
+sortme.show();
+--- expected: {9, 8, 5, 3, 2, 1}
+
+--- Sorting strings
+array:s: sw {"banana", "apple", "cherry"};
+sw.sort();
+sw.show();
+--- expected: {apple, banana, cherry}
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A12: Tablice w petlach
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A12: array in loop ===";
+
+array:i: loopArr {1, 2, 3, 4, 5};
+i: loopSum = 0;
+i: loopIdx = 0;
+while (loopIdx < loopArr.size()) do;
+    loopSum = loopSum + loopArr.get(loopIdx);
+    loopIdx = loopIdx + 1;
+end;
+>! loopSum;
+--- expected: 15
+
+--- Building array in a loop
+array:i: squares {};
+for sq in 1 to 5 do;
+    squares.push(sq * sq);
+end;
+squares.show();
+--- expected: {1, 4, 9, 16, 25}
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A13: Array methods in expressions
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A13: methods in expressions ===";
+
+array:i: expr {10, 20, 30};
+i: doubled = expr.get(0) * 2;
+>! doubled;
+--- expected: 20
+
+b: bigEnough = expr.size() > 2;
+>! bigEnough;
+--- expected: true
+
+>! "size=" + expr.size();
+--- expected: size=3
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A14: Float array — sort and operations
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A14: float array ===";
+
+array:f: ftest {3.3, 1.1, 2.2};
+ftest.sort();
+ftest.show();
+--- expected: {1.1, 2.2, 3.3}
+
+f: fsum = ftest.get(0) + ftest.get(1) + ftest.get(2);
+>! fsum;
+--- expected: 6.6000000000000005 (IEEE 754)
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK C1: Constants (const) — basic usage
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK C1: basic const ===";
+
+const i: MAX = 100;
+const s: VERSION = "1.0.0";
+const b: DEBUG = false;
+const f: PI = 3.14159;
+
+>! MAX;
+--- expected: 100
+>! VERSION;
+--- expected: 1.0.0
+>! DEBUG;
+--- expected: false
+>! PI;
+--- expected: 3.14159
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK C2: Constants in expressions
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK C2: const in expressions ===";
+
+i: half = MAX / 2;
+>! half;
+--- expected: 50
+
+b: overMax = half > MAX;
+>! overMax;
+--- expected: false
+
+>! "Version: " + VERSION;
+--- expected: Version: 1.0.0
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK C3: Attempt to change const — RUNTIME ERROR (AssignToConst)
+--- This block is commented out because it causes an error — uncomment
+--- to manually check that the error is thrown
+--- ────────────────────────────────────────────────────────────
+--- MAX = 200;    <-- AssignToConstError: constant 'MAX' cannot be reassigned
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK S1: No shadowing — RUNTIME ERROR (RedefinedVariable)
+--- The following are commented out — uncomment to check errors
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK S1: no shadowing (positive tests) ===";
+
+i: outer_x = 10;
+if (true) then;
+    outer_x = 20;       --- OK: reassignment
+    >! outer_x;         --- 20
+end;
+>! outer_x;             --- 20 (global variable modified)
+
+--- Attempting to redeclare in a block would be an error:
+--- if (true) then;
+---     i: outer_x = 99;   <-- RedefinedVariableError
+--- end;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK I1: User input (>?)
+--- This block requires interactive stdin — in test mode
+--- interpreter.readLine is mocked externally.
+--- The following code tests syntax and parsing >?.
+--- (When run with an input file containing
+---  "42\nAnna\ntrue\n3.14" it should print these values)
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK I1: >? syntax (parsing verification only) ===";
+>! "input blocks require stdin — skipped in automated tests";
+
+--- Verification that the block compiles and parses correctly:
+--- i:   inputInt;
+--- >? inputInt;
+--- >! inputInt;
+--- (automated tests mock readLine in src/index.ts)
+
+
+>! "=== ALL ARRAY AND CONST TESTS FINISHED ===";

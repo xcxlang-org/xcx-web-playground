@@ -1,0 +1,26 @@
+{
+  "name": "xcx-interpreter",
+  "version": "1.0.0",
+  "description": "XCX language interpreter",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./src/index.ts",
+    "./browser": "./src/run.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "run:example": "ts-node src/index.ts examples/hello.xcx",
+    "runner": "ts-node src/tests_runner.ts",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.19.41",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

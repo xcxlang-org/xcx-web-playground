@@ -1,0 +1,18 @@
+<IfModule mod_headers.c>
+    # Headers required by SharedArrayBuffer in Web Workers
+    Header always set Cross-Origin-Embedder-Policy "require-corp"
+    Header always set Cross-Origin-Opener-Policy "same-origin"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Vue Router (Single Page Application) support
+  # If the request is for a file that exists (e.g. in assets/ folder), serve it
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  
+  # Otherwise forward the request to the main index.html file
+  RewriteRule ^(.*)$ index.html [L,QSA]
+</IfModule>

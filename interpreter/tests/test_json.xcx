@@ -1,0 +1,36 @@
+json: payload <<< {
+    "name": "developer",
+    "roles": ["admin", "editor"],
+    "version": 3.1
+} >>>;
+
+>! "Raw object keys exist?";
+>! payload.exists("name");
+>! payload.exists("roles");
+
+>! "Checking nested elements";
+json: r = payload.get("roles");
+>! r.size();
+>! r.get(0);
+
+>! "Modifying fields";
+payload.set("version", 4.0);
+>! payload.get("version");
+
+>! "Injecting new structure";
+json: arr <<< [{"id": 1}, {"id": 2}] >>>;
+payload.set("nested", arr);
+>! payload.get("nested").size();
+
+>! "Binding data";
+f: ver;
+payload.bind("version", ver);
+>! ver;
+
+s: n;
+payload.bind("name", n);
+>! n;
+
+>! "Testing stringification";
+json: empty <<< {} >>>;
+>! empty.toStr();

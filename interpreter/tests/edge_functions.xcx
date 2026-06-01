@@ -1,0 +1,221 @@
+--- ============================================================
+--- edge_functions.xcx — function tests + keywords as identifiers
+--- ============================================================
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F0: Type keywords used as variable names
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F0: keywords as identifiers ===";
+
+i: i = 42;
+i: int = 10;
+f: f = 3.14;
+f: float = 2.71;
+s: s = "hun";
+s: str = "rnd";
+b: b = true;
+b: bool = false;
+
+>! i;
+>! int;
+>! f;
+>! float;
+>! s;
+>! str;
+>! b;
+>! bool;
+
+--- Can be used in expressions
+>! i + int;
+>! f + float;
+>! s ++ str;
+>! b AND bool;
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F1: Void function — no parameters
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F1: void without parameters ===";
+
+func say_hi() {
+    >! "hi!";
+};
+
+say_hi();
+say_hi();
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F2: Void function — with parameters
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F2: void with parameters ===";
+
+func greet(s: who) {
+    >! "Hey, " + who + "!";
+};
+
+greet("Anna");
+greet("XCX");
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F3: Function with return value
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F3: return int ===";
+
+func add(i: x, i: y -> i) {
+    return x + y;
+};
+
+i: r1 = add(3, 4);
+>! r1;
+>! add(0, 0);
+>! add(100, 900);
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F4: All return types
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F4: return types ===";
+
+func get_int(-> i) {
+    return 99;
+};
+
+func get_float(-> f) {
+    return 1.5;
+};
+
+func get_str(-> s) {
+    return "xcx";
+};
+
+func get_bool(-> b) {
+    return true;
+};
+
+>! get_int();
+>! get_float();
+>! get_str();
+>! get_bool();
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F5: Function with logic inside
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F5: logic inside function ===";
+
+func max2(i: a, i: b -> i) {
+    if (a > b) then;
+        return a;
+    else;
+        return b;
+    end;
+};
+
+>! max2(3, 7);
+>! max2(10, 2);
+>! max2(5, 5);
+
+func abs_val(i: n -> i) {
+    if (n < 0) then;
+        return 0 - n;
+    end;
+    return n;
+};
+
+>! abs_val(5);
+>! abs_val(0 - 8);
+>! abs_val(0);
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F6: Recursion
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F6: recursion ===";
+
+func factorial(i: n -> i) {
+    if (n <= 1) then;
+        return 1;
+    end;
+    return n * factorial(n - 1);
+};
+
+>! factorial(0);
+>! factorial(1);
+>! factorial(5);
+>! factorial(10);
+
+func fib(i: n -> i) {
+    if (n <= 0) then;
+        return 0;
+    end;
+    if (n == 1) then;
+        return 1;
+    end;
+    return fib(n - 1) + fib(n - 2);
+};
+
+>! fib(0);
+>! fib(1);
+>! fib(7);
+>! fib(10);
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F7: Function call in expression
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F7: function in expression ===";
+
+>! add(1, 2) + add(3, 4);
+>! add(add(1, 1), add(2, 2));
+>! "result: " + add(10, 20);
+
+b: bigger = max2(5, 9) > max2(3, 4);
+>! bigger;
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F8: Function param types same as type alias
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F8: type aliases in parameters ===";
+
+func mul(int: a, int: b -> int) {
+    return a * b;
+};
+
+func starts_with(str: text, str: prefix -> bool) {
+    return text HAS prefix;
+};
+
+>! mul(6, 7);
+>! starts_with("Hello World", "Hello");
+>! starts_with("Hello World", "xyz");
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F9: Local variables inside function
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F9: local variables ===";
+
+func sum3(i: a, i: b, i: c -> i) {
+    i: tmp = a + b;
+    return tmp + c;
+};
+
+>! sum3(1, 2, 3);
+>! sum3(10, 20, 30);
+
+func concat3(s: a, s: b, s: c -> s) {
+    s: ab = a ++ b;
+    return ab ++ c;
+};
+
+>! concat3("foo", "bar", "baz");
+
+--- ──────────────────────────────────────────────────
+--- BLOCK F10: Mutual visibility — functions see globals
+--- ──────────────────────────────────────────────────
+>! "=== BLOCK F10: outer variable access ===";
+
+i: global_offset = 100;
+
+func add_offset(i: n -> i) {
+    return n + global_offset;
+};
+
+>! add_offset(5);
+>! add_offset(0);
+
+>! "=== END OF FUNCTION TESTS ===";

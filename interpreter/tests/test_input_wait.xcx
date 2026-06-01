@@ -1,0 +1,20 @@
+--- Test inputs for directly cast types
+i: myAge;
+>? myAge;
+>! myAge;
+
+f: myFloat;
+>? myFloat;
+>! myFloat;
+
+s: myStr;
+>? myStr;
+>! myStr;
+
+b: flag;
+>? flag;
+>! flag;
+
+>! "Waiting sec..";
+@wait 100;
+>! "End of edge cases!";

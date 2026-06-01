@@ -1,0 +1,13 @@
+--- Fibonacci
+
+func fib(i: n -> i) {
+    if (n <= 1) then;
+        return n;
+    else;
+        return fib(n - 1) + fib(n - 2);
+    end;
+};
+
+for i in 0 to 10 do;
+    >! fib(i);
+end;

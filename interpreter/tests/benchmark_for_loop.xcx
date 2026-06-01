@@ -1,0 +1,9 @@
+--- Benchmark: For Loop Performance Test
+--- Counts iterations from 0 to 1,000,000,000
+--- Tests for loop performance with large range
+
+i: count = 0;
+for i in 0 to 1000000000 do;
+    count = count + 1;
+end;
+>! count;

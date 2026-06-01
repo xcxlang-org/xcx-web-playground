@@ -1,0 +1,28 @@
+--- tests/string_methods.xcx
+
+>! "=== STRING METHODS ===";
+
+s: raw = "  XCX-Language  ";
+s: clean = raw.trim().lower().replace("-", "_");
+>! clean; --- "xcx_language"
+
+i: start = "Programming".indexOf("gram");
+>! start; --- 3
+
+s: part = "Programming".slice(0, 4);
+>! part;  --- "Prog"
+
+i: age = "25".toInt();
+>! age;   --- 25
+
+>! "yellow".length; --- 6
+
+>! "Hello".upper(); --- "HELLO"
+
+>! raw.startsWith("  "); --- true
+>! clean.endsWith("_language"); --- true
+>! clean.lastIndexOf("_"); --- 3
+
+>! "3.14159".toFloat(); --- 3.14159
+
+>! "=== END ===";

@@ -1,0 +1,474 @@
+--- ============================================================
+--- edge_cases.xcx — full set of edge case tests for XCX
+--- ============================================================
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 1: Types and aliases — all four types in both forms
+--- ────────────────────────────────────────────────────────────
+
+i:     a1 = 0;
+int:   a2 = 0;
+f:     a3 = 0.0;
+float: a4 = 0.0;
+s:     a5 = "";
+str:   a6 = "";
+b:     a7 = false;
+bool:  a8 = false;
+
+>! "=== BLOCK 1: type aliases ===";
+>! a1;
+>! a2;
+>! a3;
+>! a4;
+>! a5;
+>! a6;
+>! a7;
+>! a8;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 2: Boundary values of integers
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 2: boundary int ===";
+
+i: zero     = 0;
+i: one      = 1;
+i: minus1   = 0 - 1;
+i: big      = 999999999;
+i: smallN   = 0 - 999999999;
+
+>! zero;
+>! one;
+>! minus1;
+>! big;
+>! smallN;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 3: Boundary values of float
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 3: boundary float ===";
+
+f: fzero   = 0.0;
+f: fsmall  = 0.001;
+f: fbig    = 999999.999;
+f: fminus  = 0.0 - 0.001;
+
+>! fzero;
+>! fsmall;
+>! fbig;
+>! fminus;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 4: Arithmetic — priorities and associativity
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 4: operator priorities ===";
+
+--- 2 + 3 * 4 = 14  (not 20)
+i: pr1 = 2 + 3 * 4;
+>! pr1;
+
+--- (2 + 3) * 4 = 20
+i: pr2 = (2 + 3) * 4;
+>! pr2;
+
+--- 10 - 3 - 2 = 5  (left-associative)
+i: pr3 = 10 - 3 - 2;
+>! pr3;
+
+--- 2 ^ 3 ^ 2 = 512 (right-associative: 2^(3^2) = 2^9)
+i: pr4 = 2 ^ 3 ^ 2;
+>! pr4;
+
+--- Modulo
+i: mod1 = 10 % 3;
+i: mod2 = 0 % 7;
+>! mod1;
+>! mod2;
+
+--- Integer division (result truncated by makeInt)
+i: div1 = 7 / 2;
+>! div1;
+
+--- Float division
+f: div2 = 7.0 / 2.0;
+>! div2;
+
+--- Mixing int and float → float
+f: mix1 = 1 + 2.5;
+>! mix1;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 5: Exponentiation
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 5: exponentiation ===";
+
+i: p1 = 2 ^ 0;
+i: p2 = 2 ^ 1;
+i: p3 = 2 ^ 10;
+f: p4 = 2.0 ^ 0.5;
+
+>! p1;
+>! p2;
+>! p3;
+>! p4;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 6: Strings — concatenation and HAS
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 6: strings ===";
+
+--- Empty string
+s: empty = "";
+>! empty;
+
+--- Concatenation with +
+s: s1 = "Hello" + " " + "World";
+>! s1;
+
+--- Concatenation with ++
+s: s2 = "foo" ++ "bar";
+>! s2;
+
+--- Concatenation with a number via +
+s: s3 = "result: " + 42;
+>! s3;
+
+--- Empty + empty
+s: s4 = "" + "";
+>! s4;
+
+--- HAS — contains
+b: h1 = "Hello World" HAS "World";
+b: h2 = "Hello World" HAS "xyz";
+b: h3 = "abc" HAS "";
+b: h4 = "" HAS "";
+
+>! h1;
+>! h2;
+>! h3;
+>! h4;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 7: Boolean logic
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 7: logic ===";
+
+b: bt = true;
+b: bf = false;
+
+--- AND (both variants)
+b: l1 = true AND true;
+b: l2 = true AND false;
+b: l3 = true && false;
+b: l4 = false && false;
+
+>! l1;
+>! l2;
+>! l3;
+>! l4;
+
+--- OR
+b: l5 = false OR true;
+b: l6 = false OR false;
+b: l7 = false || true;
+
+>! l5;
+>! l6;
+>! l7;
+
+--- NOT (both operators: ! and !!)
+b: l8 = !bt;
+b: l9 = !!bt;
+b: l10 = !bf;
+
+>! l8;
+>! l9;
+>! l10;
+
+--- Complex logical expression
+b: l11 = true AND false OR true;
+b: l12 = !false AND true;
+
+>! l11;
+>! l12;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 8: Comparisons
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 8: comparisons ===";
+
+i: cx = 5;
+i: cy = 5;
+i: cz = 3;
+
+b: eq1 = cx == cy;
+b: eq2 = cx == cz;
+b: ne1 = cx != cz;
+b: ne2 = cx != cy;
+b: lt1 = cz < cx;
+b: lt2 = cx < cz;
+b: gt1 = cx > cz;
+b: lte1 = cy <= cx;
+b: lte2 = cz <= cx;
+b: gte1 = cx >= cy;
+b: gte2 = cz >= cx;
+
+>! eq1;
+>! eq2;
+>! ne1;
+>! ne2;
+>! lt1;
+>! lt2;
+>! gt1;
+>! lte1;
+>! lte2;
+>! gte1;
+>! gte2;
+
+--- Boolean comparison
+b: beq1 = true == true;
+b: beq2 = true == false;
+>! beq1;
+>! beq2;
+
+--- String comparison
+b: seq1 = "abc" == "abc";
+b: seq2 = "abc" == "ABC";
+>! seq1;
+>! seq2;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 9: Conditional statements — all branches
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 9: if/elseif/else ===";
+
+--- Only if — condition true
+i: n = 10;
+if (n > 5) then;
+  >! "n > 5 OK";
+end;
+
+--- Only if — condition false (no output)
+if (n > 100) then;
+  >! "SHOULD NOT APPEAR";
+end;
+
+--- if / else
+if (n > 100) then;
+  >! "NO";
+else;
+  >! "else OK";
+end;
+
+--- if / elseif / else — hit in elseif
+i: m = 5;
+if (m > 10) then;
+  >! "big";
+elseif (m == 5) then;
+  >! "equal 5 OK";
+else;
+  >! "small";
+end;
+
+--- Multiple elseif — hit in the second one
+i: k = 2;
+if (k == 1) then;
+  >! "one";
+elseif (k == 2) then;
+  >! "two OK";
+elseif (k == 3) then;
+  >! "three";
+else;
+  >! "other";
+end;
+
+--- Alias elif
+if (k == 99) then;
+  >! "no";
+elif (k == 2) then;
+  >! "elif OK";
+end;
+
+--- Alias elf and els
+if (k == 99) then;
+  >! "no";
+elf (k == 2) then;
+  >! "elf OK";
+end;
+
+if (k == 99) then;
+  >! "no";
+els;
+  >! "els OK";
+end;
+
+--- Nested if
+i: v = 7;
+if (v > 0) then;
+  if (v > 5) then;
+    >! "nested: v > 5 OK";
+  else;
+    >! "nested: v <= 5";
+  end;
+end;
+
+--- Condition with logical expression
+b: wl = true;
+if (wl AND true) then;
+  >! "condition AND OK";
+end;
+
+if (!false) then;
+  >! "negation in condition OK";
+end;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 10: Reassignment (changing variable value)
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 10: reassignment ===";
+
+i: r = 1;
+>! r;
+r = 2;
+>! r;
+r = r + 10;
+>! r;
+
+s: rs = "start";
+>! rs;
+rs = "end";
+>! rs;
+
+b: rb = true;
+rb = false;
+>! rb;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 11: Declaration without value (default values)
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 11: default values ===";
+
+i:    di;
+f:    df;
+s:    ds;
+b:    db;
+
+>! di;
+>! df;
+>! ds;
+>! db;
+
+--- Assignment after declaration without value
+di = 99;
+>! di;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 12: Expressions in print (not only variables)
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 12: expressions in print ===";
+
+>! 1 + 2 + 3;
+>! 10 * 10 - 1;
+>! "pre" ++ "fix";
+>! true AND true;
+>! 2 ^ 8;
+>! "has? " + ("Warsaw" HAS "saw");
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 13: Comments — various forms
+--- ────────────────────────────────────────────────────────────
+
+--- This is a comment and should not do anything
+>! "=== BLOCK 13: comments ===";
+
+---
+Block
+multiline
+comment
+*---
+
+>! "comments do not break output OK";
+
+--- Comment after instruction (new line, so OK)
+i: com = 5;
+--- declared com above
+>! com;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 14: Use of variables in expressions
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 14: variables in expressions ===";
+
+i: aa = 3;
+i: bb = 4;
+i: cc = aa * aa + bb * bb;
+>! cc;
+
+f: fa = 1.5;
+f: fb = fa + fa;
+>! fb;
+
+s: greet = "Hi ";
+s: name  = "XCX";
+s: msg   = greet + name;
+>! msg;
+
+b: check = aa < bb AND bb < 10;
+>! check;
+
+
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 15: Edge cases of conditions
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 15: edge if ===";
+
+--- Empty else block (only end)
+i: q = 1;
+if (q == 2) then;
+else;
+end;
+>! "empty else OK";
+
+--- Returned value from if (print in both branches)
+if (q == 1) then;
+  >! "q==1 OK";
+else;
+  >! "no";
+end;
+
+--- Condition directly with a literal
+if (true) then;
+  >! "literal true OK";
+end;
+
+if (false) then;
+  >! "SHOULD NOT APPEAR";
+end;
+
+>! "=== END OF TESTS ===";

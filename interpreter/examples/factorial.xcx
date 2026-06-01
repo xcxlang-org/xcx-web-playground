@@ -1,0 +1,12 @@
+--- Factorial
+
+func factorial(i: n -> i) {
+    if (n <= 1) then;
+        return 1;
+    end;
+    return n * factorial(n - 1);
+};
+
+i: num = 10;
+i: result = factorial(num);
+>! s(num) + "! = " + s(result);

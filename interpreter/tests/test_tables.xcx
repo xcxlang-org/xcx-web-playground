@@ -1,0 +1,73 @@
+--- Test 1: Basic table declaration and count
+table: products {
+    columns = [ id :: i @auto, name :: s, price :: f ]
+    rows = [ ("Laptop", 2999.99), ("Phone", 1499.50) ]
+};
+
+>! products.count();
+
+--- Test 2: show
+products.show();
+
+--- Test 3: Row access sugar syntax
+>! products[0].name;
+>! products[1].price;
+
+--- Test 4: insert
+products.insert("Headphones", 199.99);
+>! products.count();
+
+--- Test 5: where shorthand (column names directly)
+table: expensive {
+    columns = [ id :: i @auto, name :: s, price :: f ]
+    rows = [EMPTY]
+};
+expensive = products.where(price > 1000.0);
+expensive.show();
+
+--- Test 6: where lambda
+table: cheap {
+    columns = [ id :: i @auto, name :: s, price :: f ]
+    rows = [EMPTY]
+};
+cheap = products.where(row -> row.price < 1000.0);
+cheap.show();
+
+--- Test 7: delete
+products.delete(0);
+>! products.count();
+
+--- Test 8: Multiline declaration
+table: logs {
+    columns = [
+        id  :: i @auto,
+        msg :: s
+    ]
+    rows = [EMPTY]
+};
+
+logs.insert("First log");
+logs.insert("Second log");
+logs.show();
+
+--- Test 9: Joins
+table: users {
+    columns = [ id :: i, name :: s ]
+    rows = [ (1, "Alice"), (2, "Bob") ]
+};
+
+table: orders {
+    columns = [ order_id :: i, user_id :: i, amount :: f ]
+    rows = [ (101, 1, 50.5), (102, 1, 200.0), (103, 2, 99.99) ]
+};
+
+--- Key-based join
+table: history = users.join(orders, "id", "user_id");
+>! "=== KEY-BASED JOIN ===";
+history.show();
+
+--- Lambda join
+table: custom = users.join(orders, (u, o) -> u.id == o.user_id);
+>! "=== LAMBDA JOIN ===";
+custom.show();
+

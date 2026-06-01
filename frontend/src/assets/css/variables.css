@@ -1,0 +1,52 @@
+:root {
+  /* Dark theme (default) */
+  --bg: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+  --text: #f0f0f0;
+  --text-dim: #888888;
+  --accent: #e63946;
+  --accent-dim: #e6394633;
+  --border: #222222;
+  --code-bg: #0d0d0d;
+  --line-num: #333333;
+  --active-line: #1e1e1e;
+  --keyword: #d28fe3;
+  --string: #fa5260;
+  --comment: #8b949e;
+  --fn: #7bbcf5;
+  --number: #eebf87;
+  --type: #eed59b;
+  --operator: #70c4ce;
+  --terminal-bg: #0d0d0d;
+  --terminal-text: #f0f0f0;
+  --terminal-prompt: #e63946;
+  --scrollbar: #333333;
+  --scrollbar-track: #111111;
+}
+
+[data-theme="light"] {
+  --bg: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #eeeeee;
+  --text: #111111;
+  --text-dim: #777777;
+  --accent: #e63946;
+  --accent-dim: #e6394622;
+  --border: #dddddd;
+  --code-bg: #fafafa;
+  --line-num: #cccccc;
+  --active-line: #f0f0f0;
+  --keyword: #e63946;
+  --string: #c47a2a;
+  --comment: #aaaaaa;
+  --fn: #e63946;
+  --number: #c47a2a;
+  --type: #111111;
+  --operator: #e63946;
+  --terminal-bg: #fafafa;
+  --terminal-text: #111111;
+  --terminal-prompt: #e63946;
+  --scrollbar: #cccccc;
+  --scrollbar-track: #eeeeee;
+}
