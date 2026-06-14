@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
-import { useTheme } from '@/composables/useTheme';
 
 const SettingsModal = defineAsyncComponent(() => import('./SettingsModal.vue'));
 const FilesModal = defineAsyncComponent(() => import('./FilesModal.vue'));
@@ -20,16 +19,9 @@ const isSettingsOpen = ref(false);
 const isFilesOpen = ref(false);
 const isShortcutsOpen = ref(false);
 const router = useRouter();
-const { mode } = useTheme();
 
 const openExternalWarning = (url: string) => {
-  if (mode.value === 'dark') {
-    if (confirm('⚠️ Flashbang Warning\n\nThe destination website currently only supports LIGHT THEME.\nAre you sure you want to proceed?')) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
-  } else {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
+  window.open(url, '_blank', 'noopener,noreferrer');
 };
 
 const handleMenuClick = (label: string) => {
@@ -43,7 +35,7 @@ const handleMenuClick = (label: string) => {
     isShortcutsOpen.value = true;
     isOpen.value = false;
   } else if (label === 'Documentation') {
-    openExternalWarning('https://xcxlang.com/docs/language/index.html');
+    openExternalWarning('https://xcxlang.com/docs/index.html');
   } else if (label === 'About') {
     isOpen.value = false;
     router.push('/about');

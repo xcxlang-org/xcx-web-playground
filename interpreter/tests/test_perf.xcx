@@ -1,0 +1,64 @@
+--- Test: perf module
+
+>! "Testing perf module...";
+
+i: t0_ms = perf.ms();
+i: t0_us = perf.us();
+i: t0_ns = perf.ns();
+
+--- perf.ms() / us / ns returns integer and starts >= 0
+if (t0_ms < 0) then;
+    halt.fatal >! "FAIL: perf.ms() is negative";
+end;
+if (t0_us < 0) then;
+    halt.fatal >! "FAIL: perf.us() is negative";
+end;
+if (t0_ns < 0) then;
+    halt.fatal >! "FAIL: perf.ns() is negative";
+end;
+
+--- Ensure monotonicity
+@wait 50;
+
+i: t1_ms = perf.ms();
+i: t1_us = perf.us();
+i: t1_ns = perf.ns();
+
+if (t1_ms < t0_ms) then;
+    halt.fatal >! "FAIL: perf.ms() went backwards!";
+end;
+
+if (t1_us < t0_us) then;
+    halt.fatal >! "FAIL: perf.us() went backwards!";
+end;
+
+if (t1_ns < t0_ns) then;
+    halt.fatal >! "FAIL: perf.ns() went backwards!";
+end;
+
+--- Validate relationships (rough)
+i: elapsed_ms = t1_ms - t0_ms;
+i: elapsed_us = t1_us - t0_us;
+
+--- us should generally be greater than ms, unless time is extremely small 
+--- but wait 50ms implies significant time passed
+if (elapsed_us < elapsed_ms * 1000) then;
+    --- depending on OS scheduling this might occasionally be slightly off, but should generally be >= 1000x
+    >! "NOTE: elapsed_us vs elapsed_ms relation isn't strictly 1000x due to rounding";
+end;
+
+>! "SUCCESS: perf module basic checks passed!";
+
+--- Test loop performance
+func bench_loop(-> i) {
+    i: start = perf.ms();
+    i: count = 0;
+    while (count < 1000) do;
+        count = count + 1;
+    end;
+    i: elapsed = perf.ms() - start;
+    return elapsed;
+};
+
+i: loop_time = bench_loop();
+>! "Loop 1k iterations took " + s(loop_time) + " ms";

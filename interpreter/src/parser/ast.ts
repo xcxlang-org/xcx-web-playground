@@ -38,6 +38,8 @@ export type ASTNode =
   | RandomIntNode
   | RandomFloatNode
   | RandomChoiceNode
+  // ── perf ──
+  | PerfNode
 
   | LambdaNode
   // ── string ──
@@ -145,7 +147,7 @@ export interface ArrayDeclarationNode {
 
 export type ArrayMethodName =
   | "size" | "get" | "push" | "pop"
-  | "insert" | "update" | "delete"
+  | "insert" | "update" | "set" | "delete"
   | "find" | "contains" | "isEmpty"
   | "clear" | "sort" | "reverse" | "show";
 
@@ -328,6 +330,14 @@ export interface DateFormatNode {
  * detects DateValue operands at runtime.  No separate AST node needed.
  */
 // (intentionally empty – handled by BinaryExprNode at runtime)
+// ── Perf ─────────────────────────────────────────────────────────────────────
+
+export interface PerfNode {
+  kind: "Perf";
+  method: "ms" | "us" | "ns";
+  line: number;
+}
+
 // ── Random ───────────────────────────────────────────────────────────────────
 
 /** random.int(min, max)  or  random.int(min, max @step s) */

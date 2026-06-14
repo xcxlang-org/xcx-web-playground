@@ -94,12 +94,49 @@ const tabSize = ref<number>(parseInt(localStorage.getItem('xcx_tabSize') || '2',
 const vimMode = ref<boolean>(JSON.parse(localStorage.getItem('xcx_vimMode') || 'false'));
 const lineNumbers = ref<boolean>(JSON.parse(localStorage.getItem('xcx_lineNumbers') || 'true'));
 
+const loadFont = (fontFamilyString: string) => {
+  if (typeof document === 'undefined') return;
+  const fontMap: Record<string, string> = {
+    '"Fira Code"': 'Fira+Code:wght@400;500;600',
+    '"JetBrains Mono"': 'JetBrains+Mono:wght@400;500;600',
+    '"Source Code Pro"': 'Source+Code+Pro:wght@400;500;600',
+    '"Inconsolata"': 'Inconsolata:wght@400;500;600',
+    '"Roboto Mono"': 'Roboto+Mono:wght@400;500;600',
+    '"Ubuntu Mono"': 'Ubuntu+Mono:wght@400;700',
+    '"Comic Neue"': 'Comic+Neue:wght@400;700',
+    '"Press Start 2P"': 'Press+Start+2P',
+    '"Inter"': 'Inter:wght@400;500;600',
+    '"Playfair Display"': 'Playfair+Display:ital,wght@0,400;0,700;1,400',
+    '"Cinzel"': 'Cinzel:wght@400;700'
+  };
+
+  for (const [key, familyName] of Object.entries(fontMap)) {
+    if (fontFamilyString.includes(key)) {
+      const id = `font-${familyName.split(':')[0]}`;
+      if (!document.getElementById(id)) {
+        const link = document.createElement('link');
+        link.id = id;
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${familyName}&display=swap`;
+        document.head.appendChild(link);
+      }
+    }
+  }
+};
+
 watch(fontSize, (newVal) => localStorage.setItem('xcx_fontSize', newVal));
-watch(fontFamily, (newVal) => localStorage.setItem('xcx_fontFamily', newVal));
+watch(fontFamily, (newVal) => {
+  localStorage.setItem('xcx_fontFamily', newVal);
+  loadFont(newVal);
+});
 watch(wordWrap, (newVal) => localStorage.setItem('xcx_wordWrap', JSON.stringify(newVal)));
 watch(tabSize, (newVal) => localStorage.setItem('xcx_tabSize', newVal.toString()));
 watch(vimMode, (newVal) => localStorage.setItem('xcx_vimMode', JSON.stringify(newVal)));
 watch(lineNumbers, (newVal) => localStorage.setItem('xcx_lineNumbers', JSON.stringify(newVal)));
+
+if (typeof document !== 'undefined') {
+  loadFont(fontFamily.value);
+}
 
 export function useEditor() {
   const files = computed(() => examples.map(e => e.name));

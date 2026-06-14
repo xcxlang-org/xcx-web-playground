@@ -4,8 +4,14 @@
   "description": "XCX language interpreter",
   "main": "dist/index.js",
   "exports": {
-    ".": "./src/index.ts",
-    "./browser": "./src/run.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./browser": {
+      "types": "./src/run.ts",
+      "default": "./src/run.ts"
+    }
   },
   "scripts": {
     "build": "tsc",

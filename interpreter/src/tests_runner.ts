@@ -271,7 +271,7 @@ async function runAllTests() {
         .sort();
 
     console.log("==========================================");
-    console.log("  XCx 3.1 TEST RUNNER");
+    console.log("  XCx 4.0 TEST RUNNER");
     console.log("==========================================");
 
     const results: TestResult[] = [];

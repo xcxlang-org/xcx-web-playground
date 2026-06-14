@@ -8,6 +8,7 @@ import {
     DateConstructorNode,
     DatePropertyNode,
     DateFormatNode,
+    PerfNode,
     RandomIntNode,
     RandomFloatNode,
     RandomChoiceNode,
@@ -37,6 +38,18 @@ import {
     formatDate
 } from "../values";
 import { RuntimeError } from "../../errors/errors";
+
+export const perfStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+export function evalPerfNode(_i: Interpreter, node: PerfNode, _env: Environment): RuntimeValue {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const elapsed = now - perfStart;
+    switch (node.method) {
+        case "ms": return makeInt(Math.trunc(elapsed));
+        case "us": return makeInt(Math.trunc(elapsed * 1_000));
+        case "ns": return makeInt(Math.trunc(elapsed * 1_000_000));
+    }
+}
 
 export function isTruthy(_i: Interpreter, val: RuntimeValue, line: number): boolean {
     const sv = asScalar(val, "condition");

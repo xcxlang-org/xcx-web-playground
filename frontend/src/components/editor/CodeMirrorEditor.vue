@@ -10,15 +10,16 @@ import { keymap, drawSelection } from '@codemirror/view';
 import { indentLess, insertTab, redo, insertNewlineAndIndent, indentSelection } from '@codemirror/commands';
 import { vim } from '@replit/codemirror-vim';
 import { useEditor } from '@/composables/useEditor';
-import { xcxHighlightStyle, xcxEditorTheme } from '@/config/editor/theme';
+import { xcxHighlightStyle, createXcxEditorTheme } from '@/config/editor/theme';
 
 const { fontSize, fontFamily, wordWrap, tabSize, vimMode, lineNumbers } = useEditor();
 
 const settingsCompartment = new Compartment();
 
 const getSettingsExtensions = () => {
-  const exts = [
-    EditorState.tabSize.of(tabSize.value)
+  const exts: any[] = [
+    EditorState.tabSize.of(tabSize.value),
+    createXcxEditorTheme(fontSize.value, fontFamily.value)
   ];
   if (wordWrap.value) exts.push(EditorView.lineWrapping);
   if (vimMode.value) exts.push(vim());
@@ -34,6 +35,7 @@ const emit = defineEmits<{
 
 const editorContainer = ref<HTMLElement>();
 let editorView: EditorView | null = null;
+let fontsLoadedListener: (() => void) | null = null;
 
 const handleEnter = (view: EditorView) => {
   const state = view.state;
@@ -112,7 +114,6 @@ onMounted(() => {
       drawSelection({ cursorBlinkRate: 1200 }),
       settingsCompartment.of(getSettingsExtensions()),
       syntaxHighlighting(xcxHighlightStyle),
-      xcxEditorTheme,
     ],
   });
 
@@ -120,12 +121,35 @@ onMounted(() => {
     state: startState,
     parent: editorContainer.value,
   });
+
+  // Handle lazy font load shifts
+  if (typeof document !== 'undefined' && 'fonts' in document) {
+    document.fonts.ready.then(() => {
+      editorView?.requestMeasure();
+    });
+    fontsLoadedListener = () => {
+      editorView?.requestMeasure();
+    };
+    document.fonts.addEventListener('loadingdone', fontsLoadedListener);
+  }
 });
 
-watch([wordWrap, tabSize, vimMode], () => {
+watch([wordWrap, tabSize, vimMode, fontSize, fontFamily], () => {
   if (editorView) {
     editorView.dispatch({
       effects: settingsCompartment.reconfigure(getSettingsExtensions())
+    });
+    
+    // Run measure helper in multiple frames to align with rendering & layout transitions
+    editorView.requestMeasure();
+    requestAnimationFrame(() => {
+      editorView?.requestMeasure();
+      setTimeout(() => {
+        editorView?.requestMeasure();
+      }, 50);
+      setTimeout(() => {
+        editorView?.requestMeasure();
+      }, 150);
     });
   }
 });
@@ -143,6 +167,9 @@ watch(() => props.modelValue, (newValue) => {
 });
 
 onBeforeUnmount(() => {
+  if (fontsLoadedListener && typeof document !== 'undefined' && 'fonts' in document) {
+    document.fonts.removeEventListener('loadingdone', fontsLoadedListener);
+  }
   if (editorView) {
     editorView.destroy();
     editorView = null;

@@ -12,7 +12,7 @@ import SidebarSkeleton from '@/components/layout/SidebarSkeleton.vue';
 const { init: initTheme } = useTheme();
 const { content, cursorLine, cursorColumn, selectedFile, sessionFiles, entryPoint } = useEditor();
 const { runCode } = useTerminal();
-const { terminalPosition, splitSize, isResizing, startResize, onMouseMove, stopResize } = useLayout();
+const { terminalPosition, splitSize, isResizing, startResize, onMouseMove, stopResize, activeMobileTab } = useLayout();
 
 const isSidebarOpen = ref(false);
 const isLoading = ref(true);
@@ -20,6 +20,7 @@ const isLoading = ref(true);
 const onRun = (): void => {
   const entrySource = sessionFiles.value[entryPoint.value] ?? content.value;
   runCode(entrySource, { ...sessionFiles.value });
+  activeMobileTab.value = 'terminal';
 };
 
 onMounted(() => {

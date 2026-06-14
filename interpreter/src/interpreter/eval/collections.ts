@@ -89,6 +89,7 @@ export function evalArrayMethodCall(i: Interpreter, node: ArrayMethodCallNode, e
             arr.elements.splice(idx, 0, elemVal.value);
             return makeBool(true);
         }
+        case "set":
         case "update": {
             expectArgCount(2);
             const idxVal = evalArg(0);

@@ -33,7 +33,7 @@ export const xcxLanguage = StreamLanguage.define({
 
     languageData: {
         commentTokens: { line: "---", block: { open: "---", close: "*---" } },
-        indentOnInput: /^\s*(?:[\}\]\)]|end|else|elif|els|elf)$/
+        indentOnInput: /^\s*(?:[\}\]\)]|end|else|elif|els|elf|elseif)$/
     },
 
     token(stream, state: { inBlockComment: boolean; inRawBlock: boolean; indentLevel: number }) {
@@ -141,12 +141,10 @@ export const xcxLanguage = StreamLanguage.define({
             if (['then', 'do'].includes(w)) {
                 state.indentLevel++;
             }
-            if (['end', 'else', 'elif', 'elf', 'els'].includes(w)) {
+            if (['end', 'else', 'elif', 'elf', 'els', 'elseif'].includes(w)) {
                 if (state.indentLevel > 0) state.indentLevel--;
             }
-            if (['else', 'elif', 'elf', 'els'].includes(w)) {
-                // These decrement the previous block, but immediately start a new block inside.
-                // Actually in Stream language design, else just shifts left. For XCX it should be on same baseline.
+            if (['else'].includes(w)) {
                 state.indentLevel++;
             }
 
@@ -175,7 +173,7 @@ export const xcxLanguage = StreamLanguage.define({
     indent(state, textAfter, context) {
         if (state.inBlockComment || state.inRawBlock) return null;
         let diff = 0;
-        if (/^\s*([\}\]\)]|end\b|else\b|elif\b|els\b|elf\b)/.test(textAfter)) {
+        if (/^\s*([\}\]\)]|end\b|else\b|elif\b|els\b|elf\b|elseif\b)/.test(textAfter)) {
             diff = -1;
         }
         return Math.max(0, state.indentLevel + diff) * context.unit;

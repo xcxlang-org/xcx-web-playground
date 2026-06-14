@@ -5,6 +5,7 @@ import {
     BinaryOp,
     UnaryOp,
     IdentifierNode,
+    PerfNode,
     ArrayMethodName,
     StringMethodName,
     DateProperty,
@@ -193,6 +194,11 @@ export function parsePrimary(p: Parser): ASTNode {
         node = p.parseDateExpr();
     }
 
+    // ── perf.ms() / perf.us() / perf.ns() ────────────────────────────────────
+    else if (tok.type === TokenType.Identifier && tok.value === "perf") {
+        node = p.parsePerfExpr();
+    }
+
     // ── random.int / random.float / random.choice ──────────────────────────
     else if (tok.type === TokenType.Identifier && tok.value === "random") {
         node = p.parseRandomExpr();
@@ -315,6 +321,20 @@ export function parseDateExpr(p: Parser): ASTNode {
         return { kind: "DateConstructor", dateStr: arg1, format: formatArg, line: dateTok.line };
     } else {
         throw new ParseError("Expected '.' or '(' after date identifier", dateTok.line, dateTok.col);
+    }
+}
+
+export function parsePerfExpr(p: Parser): ASTNode {
+    const perfTok = p.consume(); // perf
+    p.expect(TokenType.Dot, "'.' after perf");
+    const methodTok = p.expect(TokenType.Identifier, "perf method ('ms', 'us', 'ns')");
+    p.expect(TokenType.LParen, "'('");
+    p.expect(TokenType.RParen, "')'");
+
+    if (methodTok.value === "ms" || methodTok.value === "us" || methodTok.value === "ns") {
+        return { kind: "Perf", method: methodTok.value, line: perfTok.line } as PerfNode;
+    } else {
+        throw new ParseError(`Unknown perf method '${methodTok.value}'`, methodTok.line, methodTok.col);
     }
 }
 

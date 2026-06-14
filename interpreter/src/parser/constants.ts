@@ -21,7 +21,7 @@ export const SHARED_METHODS = new Set<string>([
 
 export const ARRAY_METHODS = new Set<string>([
     "get", "push", "pop", "insert", "update", "delete",
-    "find", "sort", "reverse",
+    "find", "sort", "reverse", "set"
 ]);
 
 export const DATE_PROPERTIES = new Set<string>(["year", "month", "day", "hour", "minute", "second", "timestamp"]);

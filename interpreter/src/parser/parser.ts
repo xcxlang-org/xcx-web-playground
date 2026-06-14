@@ -9,7 +9,7 @@ import { ParseError } from "../errors/errors";
 import {
   parseExpr, parseOr, parseAnd, parseEquality, parseComparison,
   parseConcatenation, parseAdditive, parseMultiplicative, parseExponent, parseUnary,
-  parsePrimary, parseDateExpr, parseRandomExpr, parseInputExpr, parseJsonExpr,
+  parsePrimary, parseDateExpr, parseRandomExpr, parsePerfExpr, parseInputExpr, parseJsonExpr,
   parseCallExpr
 } from "./parse/expressions";
 
@@ -144,6 +144,7 @@ export class Parser {
   public parsePrimary = () => parsePrimary(this);
   public parseDateExpr = () => parseDateExpr(this);
   public parseRandomExpr = () => parseRandomExpr(this);
+  public parsePerfExpr = () => parsePerfExpr(this);
   public parseInputExpr = () => parseInputExpr(this);
   public parseJsonExpr = () => parseJsonExpr(this);
   public parseCallExpr = () => parseCallExpr(this);

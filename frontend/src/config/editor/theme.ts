@@ -22,10 +22,11 @@ export const xcxHighlightStyle = HighlightStyle.define([
     { tag: t.invalid, color: 'var(--accent)' },
 ]);
 
-export const xcxEditorTheme = EditorView.theme({
+export const createXcxEditorTheme = (fontSize: string, fontFamily: string) => EditorView.theme({
     '&': {
-        fontSize: 'var(--editor-font-size, 13px)',
-        fontFamily: 'var(--editor-font-family, "SF Mono", "Fira Code", monospace)',
+        fontSize: `${fontSize}px`,
+        fontFamily: fontFamily,
+        lineHeight: '1.5',
         color: 'var(--text)',
         backgroundColor: 'var(--code-bg)',
     },
@@ -36,9 +37,15 @@ export const xcxEditorTheme = EditorView.theme({
         backgroundColor: 'var(--code-bg)',
         color: 'var(--line-num)',
         border: 'none',
+        fontSize: `${fontSize}px`,
+        fontFamily: fontFamily,
+        lineHeight: '1.5',
     },
     '.cm-lineNumbers .cm-gutterElement': {
         color: 'var(--line-num)',
+        fontSize: `${fontSize}px`,
+        fontFamily: fontFamily,
+        lineHeight: '1.5',
     },
     '.cm-activeLineGutter': {
         backgroundColor: 'var(--active-line)',
@@ -54,13 +61,19 @@ export const xcxEditorTheme = EditorView.theme({
         caretColor: 'var(--accent)',
         outline: 'none',
         border: 'none',
-        fontFamily: 'var(--editor-font-family, monospace)',
+        fontSize: `${fontSize}px`,
+        fontFamily: fontFamily,
+        lineHeight: '1.5',
     },
     '.cm-line': {
         padding: '0 4px',
+        lineHeight: '1.5',
     },
     '.cm-scroller': {
         overflow: 'auto',
+        fontSize: `${fontSize}px`,
+        fontFamily: fontFamily,
+        lineHeight: '1.5',
     },
     '.cm-content .tok-keyword': { color: 'var(--keyword)', fontWeight: '500' },
     '.cm-content .tok-string': { color: 'var(--string)' },

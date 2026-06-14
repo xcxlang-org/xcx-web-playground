@@ -11,8 +11,20 @@ const fonts = [
   { label: 'Fira Code', value: '"Fira Code", monospace' },
   { label: 'JetBrains Mono', value: '"JetBrains Mono", monospace' },
   { label: 'Source Code Pro', value: '"Source Code Pro", monospace' },
+  { label: 'Inconsolata', value: '"Inconsolata", monospace' },
+  { label: 'Roboto Mono', value: '"Roboto Mono", monospace' },
+  { label: 'Ubuntu Mono', value: '"Ubuntu Mono", monospace' },
   { label: 'Consolas', value: 'Consolas, monospace' },
   { label: 'Courier New', value: '"Courier New", Courier, monospace' },
+  { label: 'Comic Neue (Casual)', value: '"Comic Neue", cursive' },
+  { label: 'Press Start 2P (Retro)', value: '"Press Start 2P", display' },
+  { label: 'Inter (Sans)', value: '"Inter", sans-serif' },
+  { label: 'Playfair Display (Serif)', value: '"Playfair Display", serif' },
+  { label: 'Cinzel (Fancy)', value: '"Cinzel", serif' },
+  { label: 'Times New Roman', value: '"Times New Roman", Times, serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Arial', value: 'Arial, Helvetica, sans-serif' },
+  { label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
 ];
 
 const sizes = [

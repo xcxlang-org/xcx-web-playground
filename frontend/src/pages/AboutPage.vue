@@ -2,22 +2,14 @@
 import { useRouter } from 'vue-router';
 import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 import IconChevronLeft from '@/components/ui/icons/IconChevronLeft.vue';
-import { useTheme } from '@/composables/useTheme';
 
 const router = useRouter();
-const { mode } = useTheme();
 
 const openExternalWarning = (url: string) => {
-  if (mode.value === 'dark') {
-    if (confirm('⚠️ Flashbang Warning\n\nThe destination website currently only supports LIGHT THEME.\nAre you sure you want to proceed?')) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
-  } else {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
+  window.open(url, '_blank', 'noopener,noreferrer');
 };
 
-const version = '3.1';
+const version = '4.0';
 const interpreterVersion = '1.0';
 const buildDate = 'May 2026';
 const stack = [
@@ -69,7 +61,7 @@ const links = [
           </button>
           <button
             class="px-6 py-3 bg-bg-secondary border border-border text-text-dim rounded-lg text-sm lg:text-base font-medium hover:text-text hover:border-accent/40 transition-colors whitespace-nowrap"
-            @click="openExternalWarning('https://xcxlang.com/docs/language/index.html')"
+            @click="openExternalWarning('https://xcxlang.com/docs/index.html')"
           >
             Documentation
           </button>
@@ -85,6 +77,7 @@ const links = [
           <li>No support for the <code>crypto</code> module.</li>
           <li>No support for the <code>store</code> module.</li>
           <li>Partial support for the <code>terminal</code> module.</li>
+          <li>No support for fibers.</li>
         </ul>
         <div class="mt-6 pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center gap-4 text-xs">
           <div class="flex items-center gap-2">

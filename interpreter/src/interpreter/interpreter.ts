@@ -5,6 +5,7 @@
   WhileNode, ForNode, WaitNode,
   ArrayDeclarationNode, ArrayMethodCallNode,
   DateConstructorNode, DatePropertyNode, DateFormatNode,
+  PerfNode,
   RandomIntNode, RandomFloatNode, RandomChoiceNode,
   XcxType, FuncParam,
   StringPropertyNode, StringMethodCallNode,
@@ -32,6 +33,7 @@ import {
   evalDateConstructor,
   evalDateProperty,
   evalDateFormat,
+  evalPerfNode,
   evalRandomInt,
   evalRandomFloat,
   evalRandomChoice,
@@ -109,7 +111,16 @@ export class Interpreter {
 
   run(program: ProgramNode): void {
     try {
-      for (const node of program.body) this.evalNode(node, this.env);
+      for (const node of program.body) {
+        if (node.kind === "FuncDeclaration") {
+          this.evalFuncDeclaration(node);
+        }
+      }
+      for (const node of program.body) {
+        if (node.kind !== "FuncDeclaration") {
+          this.evalNode(node, this.env);
+        }
+      }
     } catch (err) {
       if (err instanceof HaltErrorSignal) {
         throw new RuntimeError("halt.error: Function call frame aborted in root scope", 0);
@@ -148,6 +159,7 @@ export class Interpreter {
       case "DateNow": return makeDate(new Date());
       case "DateProperty": return this.evalDateProperty(node, env);
       case "DateFormat": return this.evalDateFormat(node, env);
+      case "Perf": return this.evalPerfNode(node as PerfNode, env);
       case "RandomInt": return this.evalRandomInt(node, env);
       case "RandomFloat": return this.evalRandomFloat(node, env);
       case "RandomChoice": return this.evalRandomChoice(node, env);
@@ -180,8 +192,17 @@ export class Interpreter {
 
   // Delegated implementation methods
   private evalProgram = (node: ProgramNode, env: Environment) => {
+    for (const child of node.body) {
+      if (child.kind === "FuncDeclaration") {
+        this.evalFuncDeclaration(child);
+      }
+    }
     let last: RuntimeValue = makeStr("");
-    for (const child of node.body) last = this.evalNode(child, env);
+    for (const child of node.body) {
+      if (child.kind !== "FuncDeclaration") {
+        last = this.evalNode(child, env);
+      }
+    }
     return last;
   };
 
@@ -203,6 +224,7 @@ export class Interpreter {
   private evalDateConstructor = (node: DateConstructorNode, env: Environment) => evalDateConstructor(this, node, env);
   private evalDateProperty = (node: DatePropertyNode, env: Environment) => evalDateProperty(this, node, env);
   private evalDateFormat = (node: DateFormatNode, env: Environment) => evalDateFormat(this, node, env);
+  private evalPerfNode = (node: PerfNode, env: Environment) => evalPerfNode(this, node, env);
   private evalRandomInt = (node: RandomIntNode, env: Environment) => evalRandomInt(this, node, env);
   private evalRandomFloat = (node: RandomFloatNode, env: Environment) => evalRandomFloat(this, node, env);
   private evalRandomChoice = (node: RandomChoiceNode, env: Environment) => evalRandomChoice(this, node, env);
@@ -290,7 +312,14 @@ export class Interpreter {
     this.loadingStack.add(can);
     try {
       for (const st of ast.body) {
-        this.evalNode(st, moduleEnv);
+        if (st.kind === "FuncDeclaration") {
+          this.evalFuncDeclaration(st);
+        }
+      }
+      for (const st of ast.body) {
+        if (st.kind !== "FuncDeclaration") {
+          this.evalNode(st, moduleEnv);
+        }
       }
     } finally {
       this.loadingStack.delete(can);

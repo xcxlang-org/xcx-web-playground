@@ -90,23 +90,27 @@ export function evalInput(i: Interpreter, node: InputNode, env: Environment): Ru
 
 export function evalIf(i: Interpreter, node: IfNode, env: Environment): RuntimeValue {
     if (isTruthy(i, i.evalNode(node.ifBranch.condition, env), node.line)) {
-        return evalBlock(i, node.ifBranch.body, new Environment(env));
+        const branchEnv = hasDeclarations(node.ifBranch.body) ? new Environment(env) : env;
+        return evalBlock(i, node.ifBranch.body, branchEnv);
     }
     for (const branch of node.elseifBranches) {
         if (isTruthy(i, i.evalNode(branch.condition, env), node.line)) {
-            return evalBlock(i, branch.body, new Environment(env));
+            const branchEnv = hasDeclarations(branch.body) ? new Environment(env) : env;
+            return evalBlock(i, branch.body, branchEnv);
         }
     }
     if (node.elseBranch !== null) {
-        return evalBlock(i, node.elseBranch, new Environment(env));
+        const branchEnv = hasDeclarations(node.elseBranch) ? new Environment(env) : env;
+        return evalBlock(i, node.elseBranch, branchEnv);
     }
     return makeInt(0);
 }
 
 export function evalWhile(i: Interpreter, node: WhileNode, env: Environment): RuntimeValue {
     let last: RuntimeValue = makeInt(0);
+    const needsNewEnv = hasDeclarations(node.body);
     while (isTruthy(i, i.evalNode(node.condition, env), node.line)) {
-        const iterationEnv = new Environment(env);
+        const iterationEnv = needsNewEnv ? new Environment(env) : env;
         try {
             last = evalBlock(i, node.body, iterationEnv);
         } catch (sig) {
@@ -145,9 +149,24 @@ export function evalFor(i: Interpreter, node: ForNode, env: Environment): Runtim
     let last: RuntimeValue = makeInt(0);
 
     const cond = step > 0 ? (index: number) => index <= endVal : (index: number) => index >= endVal;
+
+    const needsNewEnv = hasDeclarations(node.body);
+    let sharedEnv: Environment | null = null;
+    if (!needsNewEnv && cond(startVal)) {
+        sharedEnv = new Environment(parent);
+        sharedEnv.declare(node.varName, "int", makeInt(startVal), node.line, false, true);
+    }
+
     for (let index = startVal; cond(index); index += step) {
-        const childEnv = new Environment(parent);
-        childEnv.declare(node.varName, "int", makeInt(index), node.line, false, true);
+        let childEnv: Environment;
+        if (needsNewEnv) {
+            childEnv = new Environment(parent);
+            childEnv.declare(node.varName, "int", makeInt(index), node.line, false, true);
+        } else {
+            childEnv = sharedEnv!;
+            childEnv.assign(node.varName, makeInt(index), node.line);
+        }
+
         try {
             last = evalBlock(i, node.body, childEnv);
         } catch (sig) {
@@ -176,15 +195,36 @@ export function evalForSet(
             setVal.domain === "S" ? "str" :
                 setVal.domain === "B" ? "bool" : "date";
 
+    const needsNewEnv = hasDeclarations(body);
+    let sharedEnv: Environment | null = null;
+
+    if (!needsNewEnv && elements.length > 0) {
+        sharedEnv = new Environment(parent);
+        const elem0 = elements[0]!;
+        const wrapper0 = t === "int" ? makeInt(Number(elem0)) :
+            t === "float" ? makeFloat(Number(elem0)) :
+                t === "str" ? makeStr(String(elem0)) :
+                    t === "bool" ? makeBool(Boolean(elem0)) :
+                        makeDate(new Date(elem0 as any));
+        sharedEnv.declare(varName, t, wrapper0, line, false, true);
+    }
+
     for (const elem of elements) {
-        const childEnv = new Environment(parent);
         const wrapper = t === "int" ? makeInt(Number(elem)) :
             t === "float" ? makeFloat(Number(elem)) :
                 t === "str" ? makeStr(String(elem)) :
                     t === "bool" ? makeBool(Boolean(elem)) :
                         makeDate(new Date(elem as any));
 
-        childEnv.declare(varName, t, wrapper, line, false, true);
+        let childEnv: Environment;
+        if (needsNewEnv) {
+            childEnv = new Environment(parent);
+            childEnv.declare(varName, t, wrapper, line, false, true);
+        } else {
+            childEnv = sharedEnv!;
+            childEnv.assign(varName, wrapper, line);
+        }
+
         try {
             last = evalBlock(i, body, childEnv);
         } catch (sig) {
@@ -206,11 +246,27 @@ export function evalForArray(
 ): RuntimeValue {
     let last: RuntimeValue = makeInt(0);
     const parent = env;
+    const needsNewEnv = hasDeclarations(body);
+    let sharedEnv: Environment | null = null;
+    const t = arrayValue.elementType;
+
+    if (!needsNewEnv && arrayValue.elements.length > 0) {
+        sharedEnv = new Environment(parent);
+        const wrapper0 = wrapElement(arrayValue.elements[0]!, t);
+        sharedEnv.declare(varName, t, wrapper0, line, false, true);
+    }
 
     for (const elem of arrayValue.elements) {
-        const childEnv = new Environment(parent);
-        const wrapper = wrapElement(elem, arrayValue.elementType);
-        childEnv.declare(varName, arrayValue.elementType, wrapper, line, false, true);
+        const wrapper = wrapElement(elem, t);
+        let childEnv: Environment;
+        if (needsNewEnv) {
+            childEnv = new Environment(parent);
+            childEnv.declare(varName, t, wrapper, line, false, true);
+        } else {
+            childEnv = sharedEnv!;
+            childEnv.assign(varName, wrapper, line);
+        }
+
         try {
             last = evalBlock(i, body, childEnv);
         } catch (sig) {
@@ -281,4 +337,14 @@ export function evalHalt(i: Interpreter, node: HaltNode, env: Environment): Runt
     // fatal
     i.output(`XCX Fatal: ${msg}`);
     throw new HaltFatalSignal(msg);
+}
+
+export function hasDeclarations(body: ASTNode[]): boolean {
+    for (const node of body) {
+        const k = node.kind;
+        if (k === "VarDeclaration" || k === "ConstDeclaration" || k === "ArrayDeclaration" || k === "SetDeclaration" || k === "MapDeclaration" || k === "TableDeclaration") {
+            return true;
+        }
+    }
+    return false;
 }

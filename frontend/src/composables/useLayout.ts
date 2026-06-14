@@ -5,6 +5,7 @@ export type PanelPosition = 'right' | 'left' | 'bottom' | 'top';
 const terminalPosition = ref<PanelPosition>('right');
 const splitSize = ref<number>(58);
 const isResizing = ref(false);
+const activeMobileTab = ref<'editor' | 'terminal'>('editor');
 
 export function useLayout() {
   const setPosition = (pos: PanelPosition): void => {
@@ -56,6 +57,7 @@ export function useLayout() {
     terminalPosition,
     splitSize,
     isResizing,
+    activeMobileTab,
     setPosition,
     startResize,
     onMouseMove,

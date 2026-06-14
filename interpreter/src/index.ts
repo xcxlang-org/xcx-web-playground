@@ -31,6 +31,7 @@ function main(): void {
     const sourceLines = source.split(/\r?\n/);
     const ast = new Parser(tokens).parse();
     const interpreter = new Interpreter();
+    interpreter.output = (line) => process.stdout.write(line + "\n");
     // Default interpreter.output uses process.stdout.write, which we want for real-time printing.
     interpreter.run(ast);
   } catch (err: any) {

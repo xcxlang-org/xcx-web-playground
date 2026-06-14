@@ -242,12 +242,14 @@ Arrays are ordered, homogeneous, dynamically-sized collections.
 
 ```xcx
 array:i: nums {10, 20, 30};
+array:b: flags = {true, false};
 ```
 
-**Syntax:** `array:<elementType>: <name> { <value>, ... };`
+**Syntax:** `array:<elementType>: <name> [=] { <value>, ... };`
 
+- The `=` assignment operator is optional but supported.
 - Element type is any of the four scalar types: `i`/`int`, `f`/`float`, `s`/`str`, `b`/`bool`.
-- The initializer list may be empty: `array:i: empty {};`
+- The initializer list may be empty: `array:i: empty {};` or `array:i: empty = {};`
 
 ### Array Methods
 
@@ -259,6 +261,7 @@ array:i: nums {10, 20, 30};
 | `.pop()`          | `() → T`     | `T`     | Removes and returns the last element                                |
 | `.insert(i, val)` | `(i, T) → b` | `b`     | Inserts at position `i`, shifts rest; `halt.error` if out of bounds |
 | `.update(i, val)` | `(i, T) → b` | `b`     | Overwrites element at position `i`; `halt.error` if out of bounds   |
+| `.set(i, val)`    | `(i, T) → b` | `b`     | Alias for `.update()` method; overwrites element at position `i`    |
 | `.delete(i)`      | `(i) → b`    | `b`     | Removes element at position `i`; `halt.error` if out of bounds      |
 | `.find(val)`      | `(T) → i`    | `i`     | Index of first occurrence, or `-1`                                  |
 | `.contains(val)`  | `(T) → b`    | `b`     | Checks if value exists                                              |
@@ -785,7 +788,7 @@ end;
 
 ## 21. JSON
 
-JSON objects in XCX 3.1 are mutable.
+JSON objects in XCX 4.0 are mutable.
 
 ### Creation
 
@@ -911,7 +914,7 @@ Cyclic dependencies are detected and rejected at compile time.
 
 ## 23. Error Handling (Halt)
 
-XCX 3.1 uses a structured `halt` system for managing runtime conditions and errors.
+XCX 4.0 uses a structured `halt` system for managing runtime conditions and errors.
 
 ### Halt Levels
 
@@ -941,3 +944,248 @@ end;
 Certain invalid operations result in an automatic **panic** (equivalent to `halt.fatal` or `halt.error` depending on context):
 - **Division by zero** (arithmetic)
 - **JSON Parse Failure**: Invalid string in `json.parse()` results in an immediate VM exit.
+
+---
+
+## 24. `perf` Module
+
+### Overview
+
+`perf` provides a **high-resolution monotonically increasing counter** to measure elapsed time. This is the only correct tool for benchmarking and measuring code performance.
+
+The module is intentionally separated from `date`:
+
+| Feature | `date` | `perf` |
+|---|---|---|
+| Use Case | Calendar time | Measuring elapsed time |
+| Return Type | `date` object | `i` (integer) |
+| Susceptible to NTP / time changes | Yes | **No** |
+| Can go backwards in time? | Yes | **Never** |
+
+> **Important:** Never use `date.now()` to measure execution time. The wall clock can jump or go backwards, giving incorrect or negative results. Always use `perf` for timings.
+
+---
+
+### Methods
+
+| Method | Returns | Description |
+|---|---|---|
+| `perf.ms()` | `i` | Milliseconds since interpreter start (monotonic) |
+| `perf.us()` | `i` | Microseconds since interpreter start (monotonic) |
+| `perf.ns()` | `i` | Nanoseconds since interpreter start (monotonic) |
+
+All three methods read the **same** internal counter — they only differ in unit. The counter starts at `0` when the interpreter boots and **never decreases**.
+
+> The absolute value returned by `perf.ms()` / `perf.us()` / `perf.ns()` is meaningless. Only the **difference** between two readings matters.
+
+---
+
+### Syntax and Usage Pattern
+
+```xcx
+i: start = perf.ms();
+
+--- ... measured code ...
+
+i: elapsed = perf.ms() - start;
+>! "Time: " + s(elapsed) + " ms";
+```
+
+For sub-millisecond precision, use `perf.us()` or `perf.ns()`:
+
+```xcx
+i: start = perf.us();
+
+--- ... measured code ...
+
+i: elapsed = perf.us() - start;
+f: ms = f(elapsed) / 1000.0;
+>! "Time: " + s(ms) + " ms";
+```
+
+---
+
+### Precision and Resolution
+
+| Method | Unit | Typical Resolution |
+|---|---|---|
+| `perf.ms()` | milliseconds | 1 ms |
+| `perf.us()` | microseconds | ~1 µs (platform dependent) |
+| `perf.ns()` | nanoseconds | ~1–10 ns (platform dependent) |
+
+Real resolution depends on the OS timer. On most modern systems, `perf.us()` and `perf.ns()` provide microsecond precision. The unit of the returned value is always exact — only the granularity of the hardware counter varies.
+
+---
+
+### Benchmark Pattern
+
+```xcx
+func bench_primes(-> s) {
+    i: start = perf.ms();
+
+    i: count = 0;
+    i: n = 2;
+    while (n < 1000000) do;
+        --- ... primality check ...
+        n = n + 1;
+    end;
+
+    i: elapsed = perf.ms() - start;
+    return "Primes: " + s(count) + " in " + s(elapsed) + " ms";
+};
+
+>! bench_primes();
+```
+
+---
+
+### Multiple Checkpoints
+
+`perf` values are just normal integers — you can store as many as you need:
+
+```xcx
+i: t0 = perf.ms();
+
+--- phase 1
+i: t1 = perf.ms();
+
+--- phase 2
+i: t2 = perf.ms();
+
+>! "Phase 1: " + s(t1 - t0) + " ms";
+>! "Phase 2: " + s(t2 - t1) + " ms";
+>! "Total:   " + s(t2 - t0) + " ms";
+```
+
+---
+
+### Implementation in TypeScript / Web Environment
+
+#### Recommended Time Source
+
+Use `performance.now()` — a high-resolution monotonically increasing counter available in every browser and Node.js. It returns milliseconds as a `number` (float), so it must be rounded down to `i` (integer) before returning.
+
+```typescript
+const perfStart = performance.now();
+
+const perf = {
+  ms: (): number => Math.trunc(performance.now() - perfStart),
+  us: (): number => Math.trunc((performance.now() - perfStart) * 1_000),
+  ns: (): number => Math.trunc((performance.now() - perfStart) * 1_000_000),
+};
+```
+
+`performance.now()` fulfills all module requirements:
+- monotonically increasing — never goes back in time
+- independent of system clock and NTP
+- counter starts when the context is created (good enough approximation of "interpreter start")
+
+#### Precision Note
+
+In browsers, `performance.now()` may be intentionally constrained to 1 ms or 0.1 ms resolution for security reasons (Spectre mitigation). This means `perf.us()` and `perf.ns()` might have a real granularity of 100 µs or 1 µs, respectively, instead of theoretical 1 ns. This behavior, however, aligns with the specification: the unit of the value is correct, only the hardware counter granularity changes. This is not a bug — it's expected behavior on the web platform.
+
+---
+
+### Behavior on System Sleep
+
+On web platforms, `performance.now()` behaves as **Variant A** (recommended): the counter pauses during sleep/hibernation on most browsers. Sleep time is not counted — this is more intuitive when measuring code execution time.
+
+---
+
+### Overflow
+
+The `i` type is a 64-bit signed integer. Time until overflow:
+
+| Method | Time to overflow |
+|---|---|
+| `perf.ms()` | ~292 million years |
+| `perf.us()` | ~292 thousand years |
+| `perf.ns()` | ~292 years |
+
+Practically, only `perf.ns()` could theoretically overflow (after ~292 years of uptime). Upon overflow, the counter does not report an error — it behaves like a standard 64-bit integer overflow (wraparound). The difference between two readings remains mathematically correct even after a single overflow, as long as both readings are not separated by more than `2^63` units.
+
+> **Implementer Note:** JavaScript `number` is an IEEE 754 64-bit float, which loses precision for integers above `2^53`. For `perf.ns()`, the safe range is ~104 days of uptime. For longer sessions, you'd use `BigInt`, or simply don't worry about it in the context of a playground (sessions typically last seconds/minutes).
+
+---
+
+### Relationship with `@wait`
+
+`@wait N` pauses execution for `N` milliseconds. The `perf` counter keeps running while waiting — the measured time includes the pause:
+
+```xcx
+i: start = perf.ms();
+@wait 500;
+i: elapsed = perf.ms() - start;  --- ~500
+>! s(elapsed) + " ms";
+```
+
+---
+
+### Usage in Concurrent Contexts (Fibers / Workers)
+
+The `perf` counter is **shared and global** — all fibers/workers read the same monotonically increasing counter. There are no per-fiber counters.
+
+This means a benchmark inside a handler measures real wall time, not CPU time allocated specifically to that fiber. This is the correct behavior for latency measurements.
+
+```xcx
+fiber handle_slow(json: req -> json) {
+    i: start = perf.ms();
+    --- ... handler logic ...
+    i: elapsed = perf.ms() - start;
+    >! "Request handled in " + s(elapsed) + " ms";
+    yield net.respond(200, <<< {"ok": true} >>>);
+};
+```
+
+---
+
+### Restrictions and Compilation Errors
+
+| Situation | Behavior |
+|---|---|
+| Assinging `perf` value to a `date` variable | compilation error — type mismatch |
+| Using `perf` in a fiber | allowed — doesn't require `yield`, is not I/O |
+| Availability | everywhere — global scope, functions, fibers, handlers |
+| Lack of monotonic timer in environment | `halt.fatal` at first call |
+| `perf.us()` / `perf.ns()` without platform support | degradation to lower precision, **never** an error |
+
+---
+
+### Full Example — Multi-Phase Benchmark
+
+```xcx
+func run_benchmark(-> b) {
+    i: total_start = perf.ms();
+
+    --- Phase 1: data initialization
+    i: t0 = perf.ms();
+    array:i: data;
+    i: idx = 0;
+    while (idx < 10000) do;
+        data.push(idx * 3);
+        idx = idx + 1;
+    end;
+    i: phase1 = perf.ms() - t0;
+
+    --- Phase 2: sorting
+    i: t1 = perf.ms();
+    data.sort();
+    i: phase2 = perf.ms() - t1;
+
+    --- Phase 3: searching
+    i: t2 = perf.ms();
+    b: found = data.contains(9999);
+    i: phase3 = perf.ms() - t2;
+
+    i: total = perf.ms() - total_start;
+
+    >! "Initialization: " + s(phase1) + " ms";
+    >! "Sorting:        " + s(phase2) + " ms";
+    >! "Searching:      " + s(phase3) + " ms";
+    >! "Total:          " + s(total)  + " ms";
+
+    return true;
+};
+
+run_benchmark();
+```

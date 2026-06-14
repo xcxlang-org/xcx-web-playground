@@ -154,23 +154,22 @@ export function asJson(rv: RuntimeValue, context: string): JsonValue {
 
 // ── Date formatting ─────────────────────────────────────────────────────────
 
-/**
- * Format a JS Date using XCX format tokens:
- *   YYYY  MM  M  DD  D  HH  mm  ss  SSS  ms
- */
 export function formatDate(d: Date, fmt: string): string {
-  const YYYY = String(d.getFullYear()).padStart(4, "0");
-  const MM = String(d.getMonth() + 1).padStart(2, "0");
-  const M = String(d.getMonth() + 1);
-  const DD = String(d.getDate()).padStart(2, "0");
-  const D = String(d.getDate());
-  const HH = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  const ss = String(d.getSeconds()).padStart(2, "0");
-  const ms = String(d.getMilliseconds()).padStart(3, "0");
-
-  const TOKEN_MAP: Record<string, string> = { YYYY, MM, DD, HH, SSS: ms, ms, mm, ss, M, D };
-  return fmt.replace(/YYYY|SSS|MM|DD|HH|mm|ss|\bms\b|\bM\b|\bD\b/g, (m) => TOKEN_MAP[m] ?? m);
+  return fmt.replace(/YYYY|SSS|MM|DD|HH|mm|ss|\bms\b|\bM\b|\bD\b/g, (m) => {
+    switch (m) {
+      case "YYYY": return String(d.getFullYear()).padStart(4, "0");
+      case "MM": return String(d.getMonth() + 1).padStart(2, "0");
+      case "M": return String(d.getMonth() + 1);
+      case "DD": return String(d.getDate()).padStart(2, "0");
+      case "D": return String(d.getDate());
+      case "HH": return String(d.getHours()).padStart(2, "0");
+      case "mm": return String(d.getMinutes()).padStart(2, "0");
+      case "ss": return String(d.getSeconds()).padStart(2, "0");
+      case "SSS": return String(d.getMilliseconds()).padStart(3, "0");
+      case "ms": return String(d.getMilliseconds()).padStart(3, "0");
+      default: return m;
+    }
+  });
 }
 
 // â”€â”€ Date parsing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

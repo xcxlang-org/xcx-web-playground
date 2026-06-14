@@ -3,7 +3,7 @@ import type { TerminalLine, TerminalCommand, TerminalLineType } from '@/types';
 import { useInterpreter } from './useInterpreter';
 
 const lines = ref<TerminalLine[]>([
-  { id: crypto.randomUUID(), content: 'xcx v1.0.0 — playground', type: 'info', timestamp: Date.now() },
+  { id: crypto.randomUUID(), content: 'xcx 4.0', type: 'info', timestamp: Date.now() },
   { id: crypto.randomUUID(), content: "Type '!help' for available commands.", type: 'info', timestamp: Date.now() },
 ]);
 
@@ -81,10 +81,14 @@ export function useTerminal() {
   const { submitInput, isWaitingForInput, isRunning, runCode: _runCode, abort } = useInterpreter();
 
   const wrapRunCode = (source: string, vfs: Record<string, string> = {}) => {
+    const startTime = performance.now();
     _runCode(source, vfs, {
       onOutput: (line: string) => addLine(line, 'output'),
       onError: (msg: string) => addLine(msg, 'error'),
-      onDone: () => addLine('✓ execution finished', 'success'),
+      onDone: () => {
+        const elapsed = (performance.now() - startTime).toFixed(2);
+        addLine(`✓ execution finished in ${elapsed}ms`, 'success');
+      },
       onStdinRequest: () => addLine('❯ input required, type and press Enter...', 'info'),
       onClear: () => clear()
     });
@@ -130,7 +134,7 @@ export function useTerminal() {
         addLine('exiting interactive mode...', 'info');
         break;
       case 'version':
-        addLine('xcx v1.0.0 (playground)', 'info');
+        addLine('xcx 4.0', 'info');
         break;
       case '!stop':
         stopCode();

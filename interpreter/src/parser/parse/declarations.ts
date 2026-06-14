@@ -103,9 +103,14 @@ export function parseArrayDeclaration(p: Parser): ArrayDeclarationNode {
 
     if (p.current().type === TokenType.Assign) {
         p.consume(); // '='
-        value = p.parseExpr();
-        p.expect(TokenType.Semicolon, "';'");
-    } else if (p.current().type === TokenType.Semicolon) {
+        if (p.current().type !== TokenType.LBrace) {
+            value = p.parseExpr();
+            p.expect(TokenType.Semicolon, "';'");
+            return { kind: "ArrayDeclaration", name: nameTok.value, elementType: elemType, elements, value, line: arrayTok.line };
+        }
+    }
+
+    if (p.current().type === TokenType.Semicolon) {
         p.consume(); // ';'
     } else {
         p.expect(TokenType.LBrace, "'{'");
