@@ -752,8 +752,8 @@ Directly interact with the system environment or current process.
 | `.terminal !write expr` | Prints expr without a trailing newline |
 
 > [!WARNING]
-> **.terminal !run <file> Oczekuje na Implementację (TODO)**
-> Metoda `!run` służy do odpalania innych plików w nowym wirtualnym procesie. Z uwagi na architekturę XCX Web Playground, pliki są wirtualne i zarządzane przez Front-end (Vue.js + Vite). By w pełni zaimplementować tę instrukcję, Interpreter musi spiąć się z systemem Wirtualnego Systemu Plików (VFS) Playgroundu, pozwalając na wymianę i parsowanie skryptów z wirtualnej struktury folderów środowiska graficznego. Z tego względu dodanie jej w tej chwili jest zawieszone, do momentu integracji interpretera wraz z VFS frontendu.
+> **.terminal !run <file> Awaiting Implementation (TODO)**
+> The `!run` method is used to execute other files in a new virtual process. Due to the architecture of the XCX Web Playground, files are virtual and managed by the Front-end (Vue.js + Vite). To fully implement this instruction, the Interpreter must integrate with the Playground's Virtual File System (VFS), allowing for the exchange and parsing of scripts from the graphical environment's virtual folder structure. For this reason, adding it at this time is suspended until the interpreter is integrated with the frontend's VFS.
 
 
 **Example — Game Loop**
