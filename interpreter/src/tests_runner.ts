@@ -59,6 +59,7 @@ const GOLDEN_OUTPUTS: Record<string, string[]> = {
         "{A, B, C, D, E}",
         "=== METHODS ===",
         "5",
+        "5",
         "false",
         "true",
         "false",
@@ -80,6 +81,7 @@ const GOLDEN_OUTPUTS: Record<string, string[]> = {
         "[]",
         "[EMPTY::none]",
         "=== MAP METHODS ===",
+        "2",
         "2",
         "true",
         "false",
@@ -227,7 +229,9 @@ const GOLDEN_OUTPUTS: Record<string, string[]> = {
         "4",
         "developer",
         "Testing stringification",
-        "{}"
+        "{}",
+        "Testing keys method",
+        "[name, nested, roles, version]"
     ],
     "test_include.xcx": [
         "=== BASIC INCLUDE ===",
@@ -271,7 +275,7 @@ async function runAllTests() {
         .sort();
 
     console.log("==========================================");
-    console.log("  XCx 4.0 TEST RUNNER");
+    console.log("  XCx 4.1 TEST RUNNER");
     console.log("==========================================");
 
     const results: TestResult[] = [];

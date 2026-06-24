@@ -10,6 +10,16 @@ export class Lexer {
 
   constructor(private readonly src: string) { }
 
+  private matchSeq2(c0: string, c1: string): boolean {
+    return this.src[this.pos] === c0 && this.src[this.pos + 1] === c1;
+  }
+
+  private matchSeq3(c0: string, c1: string, c2: string): boolean {
+    return this.src[this.pos] === c0 &&
+      this.src[this.pos + 1] === c1 &&
+      this.src[this.pos + 2] === c2;
+  }
+
   tokenize(): Token[] {
     const tokens: Token[] = [];
     const emit = (tok: Token): void => { tokens.push(tok); this.lastEmitted = tok; };
@@ -19,7 +29,7 @@ export class Lexer {
       if (this.isEOF()) break;
 
       // Comments: --- followed by newline = block, otherwise line
-      if (this.peek(3) === "---") {
+      if (this.matchSeq3("-", "-", "-")) {
         const after = this.src[this.pos + 3];
         if (after === "\n" || after === "\r" || after === undefined) {
           this.skipBlockComment();
@@ -30,22 +40,22 @@ export class Lexer {
       }
 
       // Three-char tokens
-      if (this.peek(3) === "<<<") { emit(this.readJsonBlock()); continue; }
-      if (this.peek(3) === "<=>") { emit(makeToken(TokenType.MapSchemaOp, "<=>", this.line, this.col)); this.advance(3); continue; }
-      if (this.peek(3) === "<->") { emit(makeToken(TokenType.MapSchemaOp, "<->", this.line, this.col)); this.advance(3); continue; }
+      if (this.matchSeq3("<", "<", "<")) { emit(this.readJsonBlock()); continue; }
+      if (this.matchSeq3("<", "=", ">")) { emit(makeToken(TokenType.MapSchemaOp, "<=>", this.line, this.col)); this.advance(3); continue; }
+      if (this.matchSeq3("<", "-", ">")) { emit(makeToken(TokenType.MapSchemaOp, "<->", this.line, this.col)); this.advance(3); continue; }
 
       // Two-char tokens — check before single-char
-      if (this.peek(2) === "->") { emit(makeToken(TokenType.Arrow, "->", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === ">!") { emit(makeToken(TokenType.Print, ">!", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === ">?") { emit(makeToken(TokenType.Input, ">?", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === "++") { emit(makeToken(TokenType.PlusPlus, "++", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === "==") { emit(makeToken(TokenType.EqEq, "==", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === "!=") { emit(makeToken(TokenType.NotEq, "!=", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === "<=") { emit(makeToken(TokenType.LtEq, "<=", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === ">=") { emit(makeToken(TokenType.GtEq, ">=", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === "&&") { emit(makeToken(TokenType.And, "&&", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === "||") { emit(makeToken(TokenType.Or, "||", this.line, this.col)); this.advance(2); continue; }
-      if (this.peek(2) === "!!") { emit(makeToken(TokenType.NotNot, "!!", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2("-", ">")) { emit(makeToken(TokenType.Arrow, "->", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2(">", "!")) { emit(makeToken(TokenType.Print, ">!", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2(">", "?")) { emit(makeToken(TokenType.Input, ">?", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2("+", "+")) { emit(makeToken(TokenType.PlusPlus, "++", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2("=", "=")) { emit(makeToken(TokenType.EqEq, "==", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2("!", "=")) { emit(makeToken(TokenType.NotEq, "!=", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2("<", "=")) { emit(makeToken(TokenType.LtEq, "<=", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2(">", "=")) { emit(makeToken(TokenType.GtEq, ">=", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2("&", "&")) { emit(makeToken(TokenType.And, "&&", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2("|", "|")) { emit(makeToken(TokenType.Or, "||", this.line, this.col)); this.advance(2); continue; }
+      if (this.matchSeq2("!", "!")) { emit(makeToken(TokenType.NotNot, "!!", this.line, this.col)); this.advance(2); continue; }
 
       const ch = this.current();
 
@@ -198,7 +208,7 @@ export class Lexer {
     const startCol = this.col;
     this.advance(3); // skip <<<
     let value = "";
-    while (!this.isEOF() && this.peek(3) !== ">>>") {
+    while (!this.isEOF() && !this.matchSeq3(">", ">", ">")) {
       if (this.current() === "\n") { this.line++; this.col = 0; }
       value += this.current();
       this.advance();
@@ -310,7 +320,7 @@ export class Lexer {
     const startLine = this.line;
     this.advance(3);
     while (!this.isEOF()) {
-      if (this.peek(4) === "*---") { this.advance(4); return; }
+      if (this.src[this.pos] === "*" && this.src[this.pos + 1] === "-" && this.src[this.pos + 2] === "-" && this.src[this.pos + 3] === "-") { this.advance(4); return; }
       if (this.current() === "\n") { this.line++; this.col = 0; }
       this.advance();
     }

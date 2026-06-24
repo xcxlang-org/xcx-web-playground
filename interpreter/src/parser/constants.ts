@@ -16,7 +16,7 @@ export const TOKEN_TO_XCXTYPE: ReadonlyMap<TokenType, XcxType> = new Map([
 
 export const SHARED_METHODS = new Set<string>([
     "size", "isEmpty", "contains", "clear", "show", "add", "remove",
-    "get", "insert", "keys", "values"
+    "get", "insert", "keys", "values", "slice", "count"
 ]);
 
 export const ARRAY_METHODS = new Set<string>([

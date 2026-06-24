@@ -19,6 +19,7 @@ string_to_string.show();
 
 >! "=== MAP METHODS ===";
 >! ages.size();
+>! ages.count();
 >! ages.contains("alice");
 >! ages.contains("charlie");
 

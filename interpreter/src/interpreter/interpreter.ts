@@ -1,5 +1,5 @@
 ﻿import {
-  ASTNode, ProgramNode, VarDeclarationNode, ConstDeclarationNode, VarAssignNode,
+  ASTNode, ProgramNode, VarDeclarationNode, MultiVarDeclarationNode, ConstDeclarationNode, VarAssignNode,
   PrintNode, InputNode, BinaryExprNode, UnaryExprNode,
   LiteralNode, IfNode, FuncDeclarationNode, CallExprNode, ReturnNode,
   WhileNode, ForNode, WaitNode,
@@ -18,7 +18,7 @@
   IncludeNode
 } from "../parser/ast";
 import {
-  RuntimeValue, ArrayValue, DateValue, SetValue, MapValue,
+  RuntimeValue,
   makeInt, makeFloat, makeStr, makeBool, makeDate, makeSet,
   displayValue, DEFAULT_VALUES, asScalar, asSet,
   JsonValue, TableValue, makeNamespace
@@ -154,6 +154,13 @@ export class Interpreter {
       case "Literal": return this.evalLiteral(node);
       case "ArrayDeclaration": return this.evalArrayDeclaration(node, env);
       case "ArrayMethodCall": return this.evalArrayMethodCall(node, env);
+      case "MultiVarDeclaration": {
+        let last: RuntimeValue = makeInt(0);
+        for (const decl of (node as MultiVarDeclarationNode).declarations) {
+          last = this.evalNode(decl, env);
+        }
+        return last;
+      }
       case "TableDeclaration": return this.evalTableDeclaration(node as TableDeclarationNode, env);
       case "DateConstructor": return this.evalDateConstructor(node, env);
       case "DateNow": return makeDate(new Date());
@@ -350,7 +357,11 @@ export class Interpreter {
     if (this.funcs.has(aliasedName)) {
       throw new RuntimeError(`Function '${aliasedName}' is already defined`, node.line);
     }
-    this.funcs.set(aliasedName, { params: node.params, returnType: node.returnType, body: node.body });
+    this.funcs.set(aliasedName, {
+      params: node.params,
+      returnType: node.returnType,
+      body: node.body,
+    });
     return makeStr("");
   }
 
@@ -471,10 +482,9 @@ export function getNestedJsonPath(root: any, path: string): { parent: any, key: 
 
 export function runtimeValueToJson(rv: RuntimeValue): any {
   if (rv.kind === "scalar") return rv.value;
-  if (rv.kind === "date") return (rv as DateValue).date.toISOString();
-  if (rv.kind === "json") return (rv as JsonValue).value;
-  if (rv.kind === "array") return (rv as ArrayValue).elements;
-  if (rv.kind === "set") return Array.from((rv as SetValue).elements);
-  if (rv.kind === "map") return Object.fromEntries(Array.from((rv as MapValue).elements.entries()));
+  if (rv.kind === "array") return rv.elements.map(e => e);
+  if (rv.kind === "json") return rv.value;
   return null;
 }
+
+

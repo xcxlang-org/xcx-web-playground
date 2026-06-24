@@ -3,6 +3,7 @@ import type { Parser } from "../parser";
 import {
     ASTNode,
     VarDeclarationNode,
+    MultiVarDeclarationNode,
     ConstDeclarationNode,
     ArrayDeclarationNode,
     TableDeclarationNode,
@@ -44,7 +45,7 @@ export function parseConstDeclaration(p: Parser): ConstDeclarationNode {
     return { kind: "ConstDeclaration", name: nameTok.value, varType: type, value, line: constTok.line };
 }
 
-export function parseVarDeclaration(p: Parser): VarDeclarationNode {
+export function parseVarDeclaration(p: Parser): VarDeclarationNode | MultiVarDeclarationNode {
     const typeTok = p.current();
     let type: XcxType = "int";
 
@@ -59,19 +60,40 @@ export function parseVarDeclaration(p: Parser): VarDeclarationNode {
     }
 
     p.expect(TokenType.Colon, "':'");
-    const nameTok = p.expect(TokenType.Identifier, "variable name");
 
-    let value: ASTNode | null = null;
+    const declarations: VarDeclarationNode[] = [];
+
+    const firstNameTok = p.expect(TokenType.Identifier, "variable name");
+    let firstVal: ASTNode | null = null;
     if (p.current().type === TokenType.Assign) {
-        p.consume(); // '='
-        value = p.parseExpr();
+        p.consume();
+        firstVal = p.parseExpr();
     } else if (p.current().type === TokenType.JsonString) {
         const jsonTok = p.consume();
-        value = { kind: "JsonLiteral", value: jsonTok.value, line: jsonTok.line } as JsonLiteralNode;
+        firstVal = { kind: "JsonLiteral", value: jsonTok.value, line: jsonTok.line } as JsonLiteralNode;
     }
+    declarations.push({ kind: "VarDeclaration", name: firstNameTok.value, varType: type, value: firstVal, line: firstNameTok.line });
+
+    while (p.current().type === TokenType.Comma) {
+        p.consume();
+        const nameTok = p.expect(TokenType.Identifier, "variable name");
+        let val: ASTNode | null = null;
+        if (p.current().type === TokenType.Assign) {
+            p.consume();
+            val = p.parseExpr();
+        } else if (p.current().type === TokenType.JsonString) {
+            const jsonTok = p.consume();
+            val = { kind: "JsonLiteral", value: jsonTok.value, line: jsonTok.line } as JsonLiteralNode;
+        }
+        declarations.push({ kind: "VarDeclaration", name: nameTok.value, varType: type, value: val, line: nameTok.line });
+    }
+
     p.expect(TokenType.Semicolon, "';'");
 
-    return { kind: "VarDeclaration", name: nameTok.value, varType: type, value, line: typeTok.line };
+    if (declarations.length === 1) {
+        return declarations[0]!;
+    }
+    return { kind: "MultiVarDeclaration", declarations, line: typeTok.line };
 }
 
 export function parseVarAssign(p: Parser): VarAssignNode {

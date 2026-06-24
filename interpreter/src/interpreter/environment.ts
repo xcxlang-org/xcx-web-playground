@@ -163,9 +163,13 @@ export class Environment {
   }
 
   private resolveRecord(name: string): VarRecord | null {
-    const local = this.store.get(name);
-    if (local !== undefined) return local;
-    return this.parent ? this.parent.resolveRecord(name) : null;
+    let current: Environment | null = this;
+    while (current !== null) {
+      const local = current.store.get(name);
+      if (local !== undefined) return local;
+      current = current.parent;
+    }
+    return null;
   }
 
   has(name: string): boolean {

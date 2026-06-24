@@ -56,6 +56,7 @@ export function evalArrayMethodCall(i: Interpreter, node: ArrayMethodCallNode, e
     };
 
     switch (node.method) {
+        case "count":
         case "size": { expectArgCount(0); return makeInt(arr.elements.length); }
         case "get": {
             expectArgCount(1);
@@ -148,6 +149,26 @@ export function evalArrayMethodCall(i: Interpreter, node: ArrayMethodCallNode, e
             i.output(`[${arr.elements.join(", ")}]`);
             return makeBool(true);
         }
+        case "slice": {
+            expectArgCount(2);
+            const startVal = evalArg(0);
+            const endVal = evalArg(1);
+            if (startVal.type !== "int" || endVal.type !== "int") {
+                throw new RuntimeError(`'slice' arguments must be int`, line);
+            }
+            const len = arr.elements.length;
+            let start = startVal.value as number;
+            let end = endVal.value as number;
+
+            if (start < 0) start = Math.max(len + start, 0);
+            else if (start > len) start = len;
+
+            if (end < 0) end = Math.max(len + end, 0);
+            else if (end > len) end = len;
+
+            const sliceElements = arr.elements.slice(start, end);
+            return makeArray(arr.elementType, sliceElements);
+        }
         default:
             throw new RuntimeError(`Unknown array method '${node.method}'`, line);
     }
@@ -159,6 +180,7 @@ export function evalSetMethodCall(i: Interpreter, node: SetMethodCallNode, env: 
     const args = node.args.map((a, idx) => asScalar(i.evalNode(a, env), `set method '${node.method}' arg ${idx}`));
 
     switch (node.method) {
+        case "count":
         case "size": return makeInt(sv.elements.size);
         case "isEmpty": return makeBool(sv.elements.size === 0);
         case "contains": {
@@ -195,6 +217,7 @@ export function evalMapMethodCall(i: Interpreter, node: MapMethodCallNode, env: 
     const args = node.args.map((a: ASTNode, idx: number) => asScalar(i.evalNode(a, env), `map method '${node.method}' arg ${idx}`));
 
     switch (node.method) {
+        case "count":
         case "size": return makeInt(mv.elements.size);
         case "isEmpty": return makeBool(mv.elements.size === 0);
         case "contains": {
@@ -539,6 +562,14 @@ export function evalJsonMethodCall(i: Interpreter, node: GenericMethodCallNode, 
             const first = obj.value[0];
             if (typeof first === "object" && first !== null) return makeJson(first);
             return makeJson(first);
+        }
+        case "keys": {
+            if (node.args.length !== 0) throw new RuntimeError(`.keys() expects 0 arguments`, node.line);
+            if (typeof obj.value !== 'object' || obj.value === null || Array.isArray(obj.value)) {
+                throw new RuntimeError(`halt.error: json.keys() target is not a JSON object`, node.line);
+            }
+            const keys = Object.keys(obj.value);
+            return makeArray("str", keys);
         }
         case "inject": {
             throw new RuntimeError(`inject() not fully implemented`, node.line);

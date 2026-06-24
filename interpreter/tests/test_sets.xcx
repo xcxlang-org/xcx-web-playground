@@ -16,6 +16,7 @@ letters.show();
 
 >! "=== METHODS ===";
 >! small.size();
+>! small.count();
 >! small.isEmpty();
 >! small.contains(3);
 >! small.contains(99);

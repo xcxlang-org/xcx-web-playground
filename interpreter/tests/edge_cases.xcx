@@ -471,4 +471,25 @@ if (false) then;
   >! "SHOULD NOT APPEAR";
 end;
 
+--- ────────────────────────────────────────────────────────────
+--- BLOCK 16: Multiple variable declarations
+--- ────────────────────────────────────────────────────────────
+
+>! "=== BLOCK 16: multiple declarations ===";
+
+i: x1, y1, z1;
+>! x1;
+>! y1;
+>! z1;
+
+f: a1_f = 1.0, b1_f, c1_f;
+>! a1_f;
+>! b1_f;
+>! c1_f;
+
+s: first_s, middle_s, last_s = "Doe";
+>! first_s;
+>! middle_s;
+>! last_s;
+
 >! "=== END OF TESTS ===";

@@ -34,3 +34,8 @@ payload.bind("name", n);
 >! "Testing stringification";
 json: empty <<< {} >>>;
 >! empty.toStr();
+
+>! "Testing keys method";
+array:s: keys = payload.keys();
+keys.sort();
+keys.show();

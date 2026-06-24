@@ -246,6 +246,30 @@ f: fsum = ftest.get(0) + ftest.get(1) + ftest.get(2);
 >! fsum;
 --- expected: 6.6000000000000005 (IEEE 754)
 
+--- ────────────────────────────────────────────────────────────
+--- BLOCK A15: .slice(start, end)
+--- ────────────────────────────────────────────────────────────
+>! "=== BLOCK A15: slice ===";
+
+array:i: original {10, 20, 30, 40, 50};
+
+array:i: sl1 = original.slice(1, 4);
+sl1.show();
+
+array:i: sl2 = original.slice(-3, -1);
+sl2.show();
+
+array:i: sl3 = original.slice(2, 10);
+sl3.show();
+
+array:i: sl4 = original.slice(-10, 2);
+sl4.show();
+
+s: testStr = "hello";
+s: slStr = testStr.slice(1, 4);
+>! slStr;
+>! original.count();
+
 
 --- ────────────────────────────────────────────────────────────
 --- BLOCK C1: Constants (const) — basic usage

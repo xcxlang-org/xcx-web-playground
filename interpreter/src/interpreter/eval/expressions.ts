@@ -136,6 +136,15 @@ export function evalBinaryExpr(i: Interpreter, node: BinaryExprNode, env: Enviro
     const line = node.line;
 
     if (op === "+") {
+        const leftRaw = i.evalNode(node.left, env);
+        const rightRaw = i.evalNode(node.right, env);
+        if (leftRaw.kind === "scalar" && rightRaw.kind === "scalar" && leftRaw.type !== "str" && rightRaw.type !== "str") {
+            assertNumeric(leftRaw, "+", line);
+            assertNumeric(rightRaw, "+", line);
+            const isFloat = leftRaw.type === "float" || rightRaw.type === "float";
+            return isFloat ? makeFloat((leftRaw.value as number) + (rightRaw.value as number)) : makeInt((leftRaw.value as number) + (rightRaw.value as number));
+        }
+
         const operands = flattenPlus(node);
         const vals = operands.map((o: ASTNode) => i.evalNode(o, env));
         const hasString = vals.some((v: RuntimeValue) => v.kind === "scalar" && v.type === "str");
@@ -537,6 +546,9 @@ export function evalGenericMethodCall(i: Interpreter, node: GenericMethodCallNod
     }
     if (obj.kind === "array") {
         return i.evalArrayMethodCall(node as any, env);
+    }
+    if (obj.kind === "scalar" && obj.type === "str") {
+        return evalStringMethodCall(i, node as any, env);
     }
     if (obj.kind === "set") {
         return i.evalSetMethodCall(node as any, env);

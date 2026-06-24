@@ -10,6 +10,7 @@ export type UnaryOp = "!" | "!!" | "-";
 export type ASTNode =
   | ProgramNode
   | VarDeclarationNode
+  | MultiVarDeclarationNode
   | ConstDeclarationNode
   | VarAssignNode
   | PrintNode
@@ -71,6 +72,7 @@ export type ASTNode =
 
 export interface ProgramNode { kind: "Program"; body: ASTNode[]; }
 export interface VarDeclarationNode { kind: "VarDeclaration"; varType: XcxType; name: string; value: ASTNode | null; line: number; }
+export interface MultiVarDeclarationNode { kind: "MultiVarDeclaration"; declarations: VarDeclarationNode[]; line: number; }
 export interface ConstDeclarationNode { kind: "ConstDeclaration"; varType: XcxType; name: string; value: ASTNode; line: number; }
 export interface VarAssignNode { kind: "VarAssign"; name: string; value: ASTNode; line: number; }
 export interface PrintNode { kind: "Print"; value: ASTNode; line: number; }
@@ -149,7 +151,7 @@ export type ArrayMethodName =
   | "size" | "get" | "push" | "pop"
   | "insert" | "update" | "set" | "delete"
   | "find" | "contains" | "isEmpty"
-  | "clear" | "sort" | "reverse" | "show";
+  | "clear" | "sort" | "reverse" | "show" | "slice" | "count";
 
 export interface ArrayMethodCallNode {
   kind: "ArrayMethodCall";

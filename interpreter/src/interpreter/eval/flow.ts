@@ -109,14 +109,22 @@ export function evalIf(i: Interpreter, node: IfNode, env: Environment): RuntimeV
 export function evalWhile(i: Interpreter, node: WhileNode, env: Environment): RuntimeValue {
     let last: RuntimeValue = makeInt(0);
     const needsNewEnv = hasDeclarations(node.body);
-    while (isTruthy(i, i.evalNode(node.condition, env), node.line)) {
-        const iterationEnv = needsNewEnv ? new Environment(env) : env;
-        try {
+    const hasControl = hasLoopControlSignals(node.body);
+    if (hasControl) {
+        while (isTruthy(i, i.evalNode(node.condition, env), node.line)) {
+            const iterationEnv = needsNewEnv ? new Environment(env) : env;
+            try {
+                last = evalBlock(i, node.body, iterationEnv);
+            } catch (sig) {
+                if (sig instanceof BreakSignal) break;
+                if (sig instanceof ContinueSignal) continue;
+                throw sig;
+            }
+        }
+    } else {
+        while (isTruthy(i, i.evalNode(node.condition, env), node.line)) {
+            const iterationEnv = needsNewEnv ? new Environment(env) : env;
             last = evalBlock(i, node.body, iterationEnv);
-        } catch (sig) {
-            if (sig instanceof BreakSignal) break;
-            if (sig instanceof ContinueSignal) continue;
-            throw sig;
         }
     }
     return last;
@@ -157,6 +165,7 @@ export function evalFor(i: Interpreter, node: ForNode, env: Environment): Runtim
         sharedEnv.declare(node.varName, "int", makeInt(startVal), node.line, false, true);
     }
 
+    const hasControl = hasLoopControlSignals(node.body);
     for (let index = startVal; cond(index); index += step) {
         let childEnv: Environment;
         if (needsNewEnv) {
@@ -167,12 +176,16 @@ export function evalFor(i: Interpreter, node: ForNode, env: Environment): Runtim
             childEnv.assign(node.varName, makeInt(index), node.line);
         }
 
-        try {
+        if (hasControl) {
+            try {
+                last = evalBlock(i, node.body, childEnv);
+            } catch (sig) {
+                if (sig instanceof BreakSignal) break;
+                if (sig instanceof ContinueSignal) continue;
+                throw sig;
+            }
+        } else {
             last = evalBlock(i, node.body, childEnv);
-        } catch (sig) {
-            if (sig instanceof BreakSignal) break;
-            if (sig instanceof ContinueSignal) continue;
-            throw sig;
         }
     }
     return last;
@@ -209,6 +222,7 @@ export function evalForSet(
         sharedEnv.declare(varName, t, wrapper0, line, false, true);
     }
 
+    const hasControl = hasLoopControlSignals(body);
     for (const elem of elements) {
         const wrapper = t === "int" ? makeInt(Number(elem)) :
             t === "float" ? makeFloat(Number(elem)) :
@@ -225,12 +239,16 @@ export function evalForSet(
             childEnv.assign(varName, wrapper, line);
         }
 
-        try {
+        if (hasControl) {
+            try {
+                last = evalBlock(i, body, childEnv);
+            } catch (sig) {
+                if (sig instanceof BreakSignal) break;
+                if (sig instanceof ContinueSignal) continue;
+                throw sig;
+            }
+        } else {
             last = evalBlock(i, body, childEnv);
-        } catch (sig) {
-            if (sig instanceof BreakSignal) break;
-            if (sig instanceof ContinueSignal) continue;
-            throw sig;
         }
     }
     return last;
@@ -256,6 +274,7 @@ export function evalForArray(
         sharedEnv.declare(varName, t, wrapper0, line, false, true);
     }
 
+    const hasControl = hasLoopControlSignals(body);
     for (const elem of arrayValue.elements) {
         const wrapper = wrapElement(elem, t);
         let childEnv: Environment;
@@ -267,12 +286,16 @@ export function evalForArray(
             childEnv.assign(varName, wrapper, line);
         }
 
-        try {
+        if (hasControl) {
+            try {
+                last = evalBlock(i, body, childEnv);
+            } catch (sig) {
+                if (sig instanceof BreakSignal) break;
+                if (sig instanceof ContinueSignal) continue;
+                throw sig;
+            }
+        } else {
             last = evalBlock(i, body, childEnv);
-        } catch (sig) {
-            if (sig instanceof BreakSignal) break;
-            if (sig instanceof ContinueSignal) continue;
-            throw sig;
         }
     }
     return last;
@@ -342,8 +365,25 @@ export function evalHalt(i: Interpreter, node: HaltNode, env: Environment): Runt
 export function hasDeclarations(body: ASTNode[]): boolean {
     for (const node of body) {
         const k = node.kind;
-        if (k === "VarDeclaration" || k === "ConstDeclaration" || k === "ArrayDeclaration" || k === "SetDeclaration" || k === "MapDeclaration" || k === "TableDeclaration") {
+        if (k === "VarDeclaration" || k === "MultiVarDeclaration" || k === "ConstDeclaration" || k === "ArrayDeclaration" || k === "SetDeclaration" || k === "MapDeclaration" || k === "TableDeclaration") {
             return true;
+        }
+    }
+    return false;
+}
+
+export function hasLoopControlSignals(body: ASTNode[]): boolean {
+    for (const node of body) {
+        const k = node.kind;
+        if (k === "Break" || k === "Continue") {
+            return true;
+        }
+        if (k === "If") {
+            if (hasLoopControlSignals(node.ifBranch.body)) return true;
+            for (const branch of node.elseifBranches) {
+                if (hasLoopControlSignals(branch.body)) return true;
+            }
+            if (node.elseBranch && hasLoopControlSignals(node.elseBranch)) return true;
         }
     }
     return false;
