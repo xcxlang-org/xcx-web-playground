@@ -1,6 +1,6 @@
 # interpreter
 
-TypeScript-based XCX interpreter targeting XCX 4.1. Used as a local package by the frontend (`xcx-interpreter`).
+TypeScript-based XCX interpreter targeting XCX 4.2. Used as a local package by the frontend (`xcx-interpreter`).
 
 ---
 
@@ -71,7 +71,7 @@ Canonical name lookup strips the `.xcx` extension and lowercases, so `include "M
 
 ---
 
-## Supported language features (XCX 4.1)
+## Supported language features (XCX 4.2)
 
 - Scalar types: `i`, `f`, `s`, `b`, `date`
 - Collections: `array:T`, `set:D`, `map:K<->V`, `table`, `json`

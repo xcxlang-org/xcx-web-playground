@@ -1,0 +1,9 @@
+--- Benchmark: While Loop Performance Test (10 Million Iterations)
+i: startTime = perf.ms();
+i: count = 0;
+while (count < 10000000) do;
+    count = count + 1;
+end;
+i: endTime = perf.ms();
+>! "While 10M iterations count: " + count;
+>! "Time: " + (endTime - startTime) + " ms";

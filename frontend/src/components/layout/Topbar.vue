@@ -8,11 +8,12 @@ import IconFilePlus from '@/components/ui/icons/IconFilePlus.vue';
 import IconShare from '@/components/ui/icons/IconShare.vue';
 import IconDownload from '@/components/ui/icons/IconDownload.vue';
 import IconPlay from '@/components/ui/icons/IconPlay.vue';
+import IconFileTree from '@/components/ui/icons/IconFileTree.vue';
 import { useEditor, useLayout, useExamples, useTerminal } from '@/composables';
 import type { PanelPosition } from '@/composables/useLayout';
 import { ref } from 'vue';
 
-const { selectedFile, content, shareUrl } = useEditor();
+const { selectedFile, content, shareUrl, isExplorerOpen } = useEditor();
 const { terminalPosition, setPosition } = useLayout();
 const { examples, loadExample, createFile, downloadFile } = useExamples();
 const { isRunning, stopCode } = useTerminal();
@@ -113,6 +114,16 @@ const handleDownload = (): void => {
   <span class="hidden sm:inline-block opacity-80">Search files...</span>
   <kbd class="hidden sm:inline-block ml-2 font-sans bg-bg px-1.5 py-0.5 rounded-full text-[10px] text-text-dim transition-colors group-hover:text-text">Ctrl P</kbd>
 </button>
+
+      <button
+        type="button"
+        class="hidden md:flex items-center justify-center p-1.5 rounded transition-colors"
+        :class="isExplorerOpen ? 'text-accent bg-accent-dim' : 'text-text-dim hover:text-text hover:bg-bg-tertiary'"
+        title="Toggle File Explorer"
+        @click="isExplorerOpen = !isExplorerOpen"
+      >
+        <IconFileTree class="w-4 h-4" />
+      </button>
 
       <div class="w-px h-4 bg-border mx-1 hidden sm:block"></div>
 

@@ -9,8 +9,8 @@ const openExternalWarning = (url: string) => {
   window.open(url, '_blank', 'noopener,noreferrer');
 };
 
-const version = '4.1';
-const interpreterVersion = '1.1';
+const version = '4.2';
+const interpreterVersion = '2.0.0';
 const buildDate = 'June 2026';
 const stack = [
   { name: 'TypeScript', note: 'interpreter & logic' },

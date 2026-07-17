@@ -33,7 +33,8 @@ import {
     HaltFatalSignal
 } from "../interpreter";
 import { RuntimeError } from "../../errors/errors";
-import { isTruthy, wrapElement } from "./expressions";
+import { isTruthy, wrapElement, perfStart } from "./expressions";
+import { compileLoopToJIT, executeJITCall } from "../jit";
 
 export function evalReturn(i: Interpreter, node: ReturnNode, env: Environment): RuntimeValue {
     const value = node.value !== null ? i.evalNode(node.value, env) : null;
@@ -106,7 +107,92 @@ export function evalIf(i: Interpreter, node: IfNode, env: Environment): RuntimeV
     return makeInt(0);
 }
 
+function tryRunJIT(i: Interpreter, node: ASTNode, env: Environment): RuntimeValue | null {
+    const jit = compileLoopToJIT(i, node, env);
+    if (!jit) return null;
+
+    // 1. Gather locals
+    const locals: Record<string, any> = {};
+    for (const varName of jit.externalVars) {
+        const val = env.get(varName, (node as any).line);
+        if (val.kind === "scalar" || val.kind === "json") {
+            locals[varName] = val.value;
+        } else if (val.kind === "date") {
+            locals[varName] = val.date;
+        } else if (val.kind === "array" || val.kind === "set" || val.kind === "map") {
+            locals[varName] = val.elements;
+        } else {
+            locals[varName] = val;
+        }
+    }
+
+    // 2. Define helpers
+    const printHelper = (v: any) => {
+        i.output(String(v));
+    };
+    const waitHelper = (ms: number) => {
+        if (ms <= 0) return;
+        if (typeof SharedArrayBuffer !== "undefined") {
+            try {
+                const sab = new SharedArrayBuffer(4);
+                const int32 = new Int32Array(sab);
+                Atomics.wait(int32, 0, 0, ms);
+                return;
+            } catch (e) { }
+        }
+        const end = Date.now() + ms;
+        while (Date.now() < end) { }
+    };
+    const perfHelper = {
+        ms: () => Math.trunc((typeof performance !== 'undefined' ? performance.now() : Date.now()) - perfStart),
+        us: () => Math.trunc(((typeof performance !== 'undefined' ? performance.now() : Date.now()) - perfStart) * 1000),
+        ns: () => Math.trunc(((typeof performance !== 'undefined' ? performance.now() : Date.now()) - perfStart) * 1000000)
+    };
+
+    const callHelper = (calleeName: string, ...args: any[]) => {
+        return executeJITCall(i, calleeName, args);
+    };
+
+    // 3. Run the JIT function
+    jit.runner(locals, printHelper, waitHelper, perfHelper, callHelper);
+
+    // 4. Write back local values to environment
+    for (const varName of jit.externalVars) {
+        if (locals[varName] !== undefined && !env.isConstant(varName)) {
+            const oldValue = env.get(varName, (node as any).line);
+            if (oldValue.kind !== "scalar" && oldValue.kind !== "date") {
+                continue; // reference type mutated in place, do not reassign
+            }
+            let newValue: RuntimeValue;
+            if (oldValue.kind === "scalar") {
+                const t = oldValue.type;
+                if (t === "int") {
+                    newValue = makeInt(Math.trunc(locals[varName]));
+                } else if (t === "float") {
+                    newValue = makeFloat(Number(locals[varName]));
+                } else if (t === "bool") {
+                    newValue = makeBool(Boolean(locals[varName]));
+                } else if (t === "str") {
+                    newValue = makeStr(String(locals[varName]));
+                } else {
+                    newValue = oldValue;
+                }
+            } else if (oldValue.kind === "date") {
+                newValue = makeDate(locals[varName] as Date);
+            } else {
+                newValue = oldValue;
+            }
+            env.assign(varName, newValue, (node as any).line);
+        }
+    }
+
+    return makeInt(0);
+}
+
 export function evalWhile(i: Interpreter, node: WhileNode, env: Environment): RuntimeValue {
+    const jitResult = tryRunJIT(i, node, env);
+    if (jitResult !== null) return jitResult;
+
     let last: RuntimeValue = makeInt(0);
     const needsNewEnv = hasDeclarations(node.body);
     const hasControl = hasLoopControlSignals(node.body);
@@ -131,6 +217,9 @@ export function evalWhile(i: Interpreter, node: WhileNode, env: Environment): Ru
 }
 
 export function evalFor(i: Interpreter, node: ForNode, env: Environment): RuntimeValue {
+    const jitResult = tryRunJIT(i, node, env);
+    if (jitResult !== null) return jitResult;
+
     if (node.collection) {
         const collVal = i.evalNode(node.collection, env);
         if (collVal.kind === "set") {
@@ -311,6 +400,19 @@ export function evalBlock(i: Interpreter, body: ASTNode[], env: Environment): Ru
 
 export function evalWait(i: Interpreter, node: WaitNode, env: Environment): RuntimeValue {
     const msVal = asScalar(i.evalNode(node.ms, env), "wait parameter").value as number;
+    if (msVal <= 0) return makeInt(0);
+
+    if (typeof SharedArrayBuffer !== "undefined") {
+        try {
+            const sab = new SharedArrayBuffer(4);
+            const int32 = new Int32Array(sab);
+            Atomics.wait(int32, 0, 0, msVal);
+            return makeInt(0);
+        } catch (e) {
+            // Fallback to busy loop
+        }
+    }
+
     const end = Date.now() + msVal;
     while (Date.now() < end) {
         // block sync

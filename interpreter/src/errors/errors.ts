@@ -24,11 +24,7 @@ export class XcxError extends Error {
 export class LexerError extends XcxError { }
 export class ParseError extends XcxError { }
 
-export class RuntimeError extends XcxError {
-  constructor(message: string, line: number, col?: number, len?: number, code?: string) {
-    super(message, line, col, len, code);
-  }
-}
+export class RuntimeError extends XcxError { }
 
 // S101
 export class UndefinedVariableError extends RuntimeError {

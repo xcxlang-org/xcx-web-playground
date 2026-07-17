@@ -81,6 +81,7 @@ import {
 import { vfsResolve, vfsCanonical } from "../vfs";
 import { Lexer } from "../lexer/lexer";
 import { Parser } from "../parser/parser";
+import { compileFunctionToJIT } from "./jit";
 
 const MAX_CALL_DEPTH = 800;
 const CAST_BUILTINS = new Set(["s", "i", "f", "b"]);
@@ -95,11 +96,13 @@ interface FuncRecord {
   params: FuncParam[];
   returnType: XcxType | null;
   body: ASTNode[];
+  jitRunner?: ((args: any[]) => RuntimeValue) | null;
 }
 
 export class Interpreter {
   private readonly env = new Environment();
   private readonly funcs = new Map<string, FuncRecord>();
+  private readonly astCache = new Map<string, ProgramNode>();
   private currentAlias: string | null = null;
   private callDepth = 0;
   /** Tracks modules currently being loaded — used for cyclic dependency detection. */
@@ -298,14 +301,17 @@ export class Interpreter {
     }
 
     // Parse the included module
-    const lexer = new Lexer(source);
-    const tokens = lexer.tokenize();
-    const parser = new Parser(tokens);
-    let ast: ProgramNode;
-    try {
-      ast = parser.parse();
-    } catch (e: any) {
-      throw new RuntimeError(`Failed to parse module '${rawPath}': ${e.message}`, node.line);
+    let ast = this.astCache.get(can);
+    if (!ast) {
+      const lexer = new Lexer(source);
+      const tokens = lexer.tokenize();
+      const parser = new Parser(tokens);
+      try {
+        ast = parser.parse();
+        this.astCache.set(can, ast);
+      } catch (e: any) {
+        throw new RuntimeError(`Failed to parse module '${rawPath}': ${e.message}`, node.line);
+      }
     }
 
     // Evaluate the module in its own isolated environment
@@ -357,10 +363,18 @@ export class Interpreter {
     if (this.funcs.has(aliasedName)) {
       throw new RuntimeError(`Function '${aliasedName}' is already defined`, node.line);
     }
+    const jitRunner = compileFunctionToJIT(
+      this,
+      node.name,
+      node.params,
+      node.body,
+      node.returnType
+    );
     this.funcs.set(aliasedName, {
       params: node.params,
       returnType: node.returnType,
       body: node.body,
+      jitRunner,
     });
     return makeStr("");
   }
@@ -423,6 +437,10 @@ export class Interpreter {
     const callEnv = new Environment(this.env);
     for (let idx = 0; idx < fn.params.length; idx++) {
       callEnv.declare(fn.params[idx]!.name, fn.params[idx]!.paramType, argValues[idx]!, node.line, false);
+    }
+
+    if (fn.jitRunner) {
+      return fn.jitRunner(argValues.map(v => v.value));
     }
 
     this.callDepth++;

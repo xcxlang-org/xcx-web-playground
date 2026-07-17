@@ -1,0 +1,11 @@
+--- Benchmark: Nested Loops Performance Test (2000 x 2000 Iterations)
+i: startTime = perf.ms();
+i: sum = 0;
+for i in 1 to 2000 do;
+    for j in 1 to 2000 do;
+        sum = sum + 1;
+    end;
+end;
+i: endTime = perf.ms();
+>! "Nested loops sum: " + sum;
+>! "Time: " + (endTime - startTime) + " ms";

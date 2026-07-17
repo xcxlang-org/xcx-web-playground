@@ -175,4 +175,9 @@ export class Environment {
   has(name: string): boolean {
     return this.resolveRecord(name) !== null;
   }
+
+  isConstant(name: string): boolean {
+    const record = this.resolveRecord(name);
+    return record ? record.isConst : false;
+  }
 }

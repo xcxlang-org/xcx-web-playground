@@ -241,6 +241,9 @@ const GOLDEN_OUTPUTS: Record<string, string[]> = {
         "3.14159265358979",
         "5",
         "=== INCLUDE OK ==="
+    ],
+    "test_float_arith_loop.xcx": [
+        "[09] Float Arith: 250500250.00000003"
     ]
 };
 
@@ -275,7 +278,7 @@ async function runAllTests() {
         .sort();
 
     console.log("==========================================");
-    console.log("  XCx 4.1 TEST RUNNER");
+    console.log("  XCx 4.2 TEST RUNNER");
     console.log("==========================================");
 
     const results: TestResult[] = [];

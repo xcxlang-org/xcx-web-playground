@@ -1,0 +1,9 @@
+--- Benchmark: For Loop Performance Test (10 Million Iterations)
+i: startTime = perf.ms();
+i: count = 0;
+for i in 0 to 10000000 do;
+    count = count + 1;
+end;
+i: endTime = perf.ms();
+>! "For 10M iterations count: " + count;
+>! "Time: " + (endTime - startTime) + " ms";

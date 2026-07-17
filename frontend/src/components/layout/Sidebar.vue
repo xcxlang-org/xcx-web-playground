@@ -14,11 +14,15 @@ import IconKeyboard from '@/components/ui/icons/IconKeyboard.vue';
 import IconGithub from '@/components/ui/icons/IconGithub.vue';
 import IconX from '@/components/ui/icons/IconX.vue';
 
+import { useEditor } from '@/composables/useEditor';
+
 const isOpen = defineModel<boolean>('isOpen', { default: false });
 const isSettingsOpen = ref(false);
 const isFilesOpen = ref(false);
 const isShortcutsOpen = ref(false);
 const router = useRouter();
+
+const { isExplorerOpen } = useEditor();
 
 const openExternalWarning = (url: string) => {
   window.open(url, '_blank', 'noopener,noreferrer');
@@ -29,7 +33,7 @@ const handleMenuClick = (label: string) => {
     isSettingsOpen.value = true;
     isOpen.value = false;
   } else if (label === 'Files') {
-    isFilesOpen.value = true;
+    isExplorerOpen.value = !isExplorerOpen.value;
     isOpen.value = false;
   } else if (label === 'Shortcuts') {
     isShortcutsOpen.value = true;
@@ -197,7 +201,7 @@ const menuItems = [
         <!-- Footer -->
         <div class="px-4 py-3 border-t border-border">
           <div class="text-text-dim text-xs">
-            xcx playground v1.0
+            xcx playground v2.0.0
           </div>
         </div>
       </div>

@@ -20,6 +20,7 @@ import {
     makeRow,
     makeTable,
     makeArray,
+    makeDate,
     asScalar,
     asTable,
     asSet,
@@ -325,11 +326,27 @@ export function evalTableMethodCall(i: Interpreter, node: GenericMethodCallNode,
                     if (argIdx >= arrVal.elements.length) throw new RuntimeError(`Missing value for column '${col.name}'`, node.line);
                     const rawVal = arrVal.elements[argIdx++]!;
                     let wrapped: RuntimeValue;
-                    if (typeof rawVal === "number") wrapped = Number.isInteger(rawVal) ? makeInt(rawVal) : makeFloat(rawVal);
-                    else if (typeof rawVal === "boolean") wrapped = makeBool(rawVal);
-                    else wrapped = makeStr(rawVal as string);
+                    if (col.type === "int" && typeof rawVal === "number") {
+                        wrapped = makeInt(rawVal);
+                    } else if (col.type === "float" && typeof rawVal === "number") {
+                        wrapped = makeFloat(rawVal);
+                    } else if (col.type === "bool" && typeof rawVal === "boolean") {
+                        wrapped = makeBool(rawVal);
+                    } else if (col.type === "str" && typeof rawVal === "string") {
+                        wrapped = makeStr(rawVal);
+                    } else if (col.type === "date" && typeof rawVal === "string") {
+                        wrapped = makeDate(new Date(rawVal));
+                    } else {
+                        if (typeof rawVal === "number") {
+                            wrapped = col.type === "float" ? makeFloat(rawVal) : makeInt(rawVal);
+                        } else if (typeof rawVal === "boolean") {
+                            wrapped = makeBool(rawVal);
+                        } else {
+                            wrapped = makeStr(String(rawVal));
+                        }
+                    }
 
-                    const wType = (wrapped as ScalarValue).type;
+                    const wType = wrapped.kind === "scalar" ? wrapped.type : wrapped.kind === "date" ? "date" : null;
                     if (wType !== col.type) throw new RuntimeError(`Column '${col.name}' type mismatch`, node.line);
                     newRow.push(wrapped);
                 }
@@ -347,20 +364,28 @@ export function evalTableMethodCall(i: Interpreter, node: GenericMethodCallNode,
                 const lambda = predNode as any;
                 if (lambda.params.length !== 1) throw new RuntimeError("where lambda expects exactly 1 param (the row)", node.line);
 
-                for (const row of tv.rows) {
+                if (tv.rows.length > 0) {
                     const callEnv = env.child();
-                    callEnv.declare(lambda.params[0], "str", makeRow(tv.columns, row), node.line, true, true);
-                    const b = asScalar(i.evalNode(lambda.body, callEnv), "where predicate returns bool").value;
-                    if (b === true) resRows.push(row);
+                    callEnv.declare(lambda.params[0], "str", makeRow(tv.columns, tv.rows[0]!), node.line, false, true);
+                    for (const row of tv.rows) {
+                        callEnv.assign(lambda.params[0], makeRow(tv.columns, row), node.line);
+                        const b = asScalar(i.evalNode(lambda.body, callEnv), "where predicate returns bool").value;
+                        if (b === true) resRows.push(row);
+                    }
                 }
             } else {
-                for (const row of tv.rows) {
+                if (tv.rows.length > 0) {
                     const callEnv = env.child();
                     for (let index = 0; index < tv.columns.length; index++) {
-                        callEnv.declare(tv.columns[index]!.name, tv.columns[index]!.type, row[index]!, node.line, true, true);
+                        callEnv.declare(tv.columns[index]!.name, tv.columns[index]!.type, tv.rows[0]![index]!, node.line, false, true);
                     }
-                    const b = asScalar(i.evalNode(predNode, callEnv), "where predicate returns bool").value;
-                    if (b === true) resRows.push(row);
+                    for (const row of tv.rows) {
+                        for (let index = 0; index < tv.columns.length; index++) {
+                            callEnv.assign(tv.columns[index]!.name, row[index]!, node.line);
+                        }
+                        const b = asScalar(i.evalNode(predNode, callEnv), "where predicate returns bool").value;
+                        if (b === true) resRows.push(row);
+                    }
                 }
             }
             return makeTable(tv.columns, resRows, tv.nextAuto, tv.name);
@@ -390,11 +415,22 @@ export function evalTableMethodCall(i: Interpreter, node: GenericMethodCallNode,
                 const idx2 = otherTv.columns.findIndex(c => c.name === joinKey2);
                 if (idx2 === -1) throw new RuntimeError(`Column '${joinKey2}' not found in joined table`, node.line);
 
+                const otherRowsMap = new Map<any, RuntimeValue[][]>();
+                for (const r2 of otherTv.rows) {
+                    const v2 = asScalar(r2[idx2]!, "val2").value;
+                    let list = otherRowsMap.get(v2);
+                    if (!list) {
+                        list = [];
+                        otherRowsMap.set(v2, list);
+                    }
+                    list.push(r2);
+                }
+
                 for (const r1 of tv.rows) {
-                    for (const r2 of otherTv.rows) {
-                        const v1 = asScalar(r1[idx1]!, "val1").value;
-                        const v2 = asScalar(r2[idx2]!, "val2").value;
-                        if (v1 === v2) {
+                    const v1 = asScalar(r1[idx1]!, "val1").value;
+                    const matches = otherRowsMap.get(v1);
+                    if (matches) {
+                        for (const r2 of matches) {
                             const combinedRow = [...r1];
                             for (let index = 0; index < r2.length; index++) {
                                 if (index !== idx2) combinedRow.push(r2[index]!);
@@ -410,13 +446,18 @@ export function evalTableMethodCall(i: Interpreter, node: GenericMethodCallNode,
                 const lambda = predNode as any;
                 if (lambda.params.length !== 2) throw new RuntimeError("join lambda needs exactly 2 params", node.line);
 
-                for (const r1 of tv.rows) {
-                    for (const r2 of otherTv.rows) {
-                        const callEnv = env.child();
-                        callEnv.declare(lambda.params[0], "str", makeRow(tv.columns, r1), node.line, true, true);
-                        callEnv.declare(lambda.params[1], "str", makeRow(otherTv.columns, r2), node.line, true, true);
-                        const b = asScalar(i.evalNode(lambda.body, callEnv), "join predicate returns bool").value;
-                        if (b === true) resRows.push([...r1, ...r2]);
+                if (tv.rows.length > 0 && otherTv.rows.length > 0) {
+                    const callEnv = env.child();
+                    callEnv.declare(lambda.params[0], "str", makeRow(tv.columns, tv.rows[0]!), node.line, false, true);
+                    callEnv.declare(lambda.params[1], "str", makeRow(otherTv.columns, otherTv.rows[0]!), node.line, false, true);
+
+                    for (const r1 of tv.rows) {
+                        callEnv.assign(lambda.params[0], makeRow(tv.columns, r1), node.line);
+                        for (const r2 of otherTv.rows) {
+                            callEnv.assign(lambda.params[1], makeRow(otherTv.columns, r2), node.line);
+                            const b = asScalar(i.evalNode(lambda.body, callEnv), "join predicate returns bool").value;
+                            if (b === true) resRows.push([...r1, ...r2]);
+                        }
                     }
                 }
             }

@@ -3,7 +3,7 @@ import type { TerminalLine, TerminalCommand, TerminalLineType } from '@/types';
 import { useInterpreter } from './useInterpreter';
 
 const lines = ref<TerminalLine[]>([
-  { id: crypto.randomUUID(), content: 'xcx 4.1', type: 'info', timestamp: Date.now() },
+  { id: crypto.randomUUID(), content: 'xcx 4.2', type: 'info', timestamp: Date.now() },
   { id: crypto.randomUUID(), content: "Type '!help' for available commands.", type: 'info', timestamp: Date.now() },
 ]);
 
@@ -134,7 +134,7 @@ export function useTerminal() {
         addLine('exiting interactive mode...', 'info');
         break;
       case 'version':
-        addLine('xcx 4.1', 'info');
+        addLine('xcx 4.2', 'info');
         break;
       case '!stop':
         stopCode();

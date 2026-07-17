@@ -1,6 +1,6 @@
 {
   "name": "xcx-interpreter",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "XCX language interpreter",
   "main": "dist/index.js",
   "exports": {
@@ -19,7 +19,7 @@
     "dev": "ts-node src/index.ts",
     "run:example": "ts-node src/index.ts examples/hello.xcx",
     "runner": "ts-node src/tests_runner.ts",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "npm run runner"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",

@@ -160,7 +160,7 @@ export function parseTableDeclaration(p: Parser): TableDeclarationNode {
 
     // Schema / Columns parsing
     const schemaTok = p.current();
-    if (schemaTok.type === TokenType.KwSchema || (schemaTok.type === TokenType.Identifier && schemaTok.value === "columns")) {
+    if (schemaTok.type === TokenType.Identifier && (schemaTok.value === "schema" || schemaTok.value === "columns")) {
         p.consume();
     } else {
         throw new ParseError("Expected 'schema' or 'columns'", schemaTok.line, schemaTok.col);
@@ -207,7 +207,7 @@ export function parseTableDeclaration(p: Parser): TableDeclarationNode {
 
     // Data / Rows parsing
     const dataTok = p.current();
-    if (dataTok.type === TokenType.KwData || (dataTok.type === TokenType.Identifier && dataTok.value === "rows")) {
+    if (dataTok.type === TokenType.Identifier && (dataTok.value === "data" || dataTok.value === "rows")) {
         p.consume();
     } else {
         throw new ParseError("Expected 'data' or 'rows'", dataTok.line, dataTok.col);
@@ -260,7 +260,12 @@ export function parseMapDeclaration(p: Parser): MapDeclarationNode {
     p.expect(TokenType.LBrace, "'{'");
 
     // parse schema
-    p.expect(TokenType.KwSchema, "'schema'");
+    const mapSchemaTok = p.current();
+    if (mapSchemaTok.type === TokenType.Identifier && mapSchemaTok.value === "schema") {
+        p.consume();
+    } else {
+        throw new ParseError("Expected 'schema'", mapSchemaTok.line, mapSchemaTok.col);
+    }
     p.expect(TokenType.Assign, "'='");
     p.expect(TokenType.LBracket, "'['");
     const keyTypeTok = p.consume();
@@ -284,7 +289,12 @@ export function parseMapDeclaration(p: Parser): MapDeclarationNode {
     p.expect(TokenType.RBracket, "']'");
 
     // data
-    p.expect(TokenType.KwData, "'data'");
+    const mapDataTok = p.current();
+    if (mapDataTok.type === TokenType.Identifier && mapDataTok.value === "data") {
+        p.consume();
+    } else {
+        throw new ParseError("Expected 'data'", mapDataTok.line, mapDataTok.col);
+    }
     p.expect(TokenType.Assign, "'='");
 
     const entries: MapEntry[] = [];

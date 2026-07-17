@@ -68,11 +68,14 @@ export function assertBool(val: ScalarValue, op: string, line: number): void {
         throw new RuntimeError(`Operator '${op}' requires bool, got '${val.type}'`, line);
 }
 
-export function wrapElement(elem: number | string | boolean, type: XcxType): ScalarValue {
+export function wrapElement(elem: any, type: XcxType): RuntimeValue {
     if (type === "int") return makeInt(Number(elem));
     if (type === "float") return makeFloat(Number(elem));
     if (type === "str") return makeStr(String(elem));
     if (type === "bool") return makeBool(Boolean(elem));
+    if (type === "table" || type === "namespace") return elem;
+    if (type === "json") return makeJson(elem);
+    if (type === "date") return elem instanceof Date ? makeDate(elem) : makeDate(new Date(elem));
     throw new RuntimeError(`Unsupported wrapping type '${type}'`, 0);
 }
 
@@ -136,17 +139,20 @@ export function evalBinaryExpr(i: Interpreter, node: BinaryExprNode, env: Enviro
     const line = node.line;
 
     if (op === "+") {
-        const leftRaw = i.evalNode(node.left, env);
-        const rightRaw = i.evalNode(node.right, env);
-        if (leftRaw.kind === "scalar" && rightRaw.kind === "scalar" && leftRaw.type !== "str" && rightRaw.type !== "str") {
-            assertNumeric(leftRaw, "+", line);
-            assertNumeric(rightRaw, "+", line);
-            const isFloat = leftRaw.type === "float" || rightRaw.type === "float";
-            return isFloat ? makeFloat((leftRaw.value as number) + (rightRaw.value as number)) : makeInt((leftRaw.value as number) + (rightRaw.value as number));
-        }
-
         const operands = flattenPlus(node);
         const vals = operands.map((o: ASTNode) => i.evalNode(o, env));
+
+        if (vals.length === 2) {
+            const leftRaw = vals[0]!;
+            const rightRaw = vals[1]!;
+            if (leftRaw.kind === "scalar" && rightRaw.kind === "scalar" && leftRaw.type !== "str" && rightRaw.type !== "str") {
+                assertNumeric(leftRaw, "+", line);
+                assertNumeric(rightRaw, "+", line);
+                const isFloat = leftRaw.type === "float" || rightRaw.type === "float";
+                return isFloat ? makeFloat((leftRaw.value as number) + (rightRaw.value as number)) : makeInt((leftRaw.value as number) + (rightRaw.value as number));
+            }
+        }
+
         const hasString = vals.some((v: RuntimeValue) => v.kind === "scalar" && v.type === "str");
 
         if (hasString) {
@@ -246,9 +252,19 @@ export function evalBinaryExpr(i: Interpreter, node: BinaryExprNode, env: Enviro
         const wrap = isFloat ? makeFloat : makeInt;
         switch (op) {
             case "-": return wrap(l - r);
-            case "*": return wrap(l * r);
+            case "*": {
+                const prod = l * r;
+                if (!isFloat && !Number.isSafeInteger(prod)) {
+                    return wrap(Math.imul(l, r));
+                }
+                return wrap(prod);
+            }
             case "/": if (r === 0) throw new RuntimeError("Division by zero", line); return wrap(l / r);
-            case "%": if (r === 0) throw new RuntimeError("Modulo by zero", line); return wrap(l % r);
+            case "%": {
+                if (r === 0) throw new RuntimeError("Modulo by zero", line);
+                const res = l % r;
+                return wrap(!isFloat && res < 0 ? res + Math.abs(r) : res);
+            }
             case "^": return isFloat ? makeFloat(Math.pow(l, r)) : makeInt(Math.pow(l, r));
         }
     }

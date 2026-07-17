@@ -1,0 +1,7 @@
+f: acc = 0.0;
+for a in 1 to 1000 do;
+    for b in 1 to 1000 do;
+        acc = acc + (f(a * b) / 1000.0);
+    end;
+end;
+>! "[09] Float Arith: " + s(acc);

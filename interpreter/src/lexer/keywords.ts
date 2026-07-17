@@ -55,8 +55,6 @@ export const WORD_KEYWORDS: ReadonlyMap<string, TokenType> = new Map([
   ["INTERSECTION", TokenType.SetIntersection],
   ["DIFFERENCE", TokenType.SetDifference],
   ["SYMMETRIC_DIFFERENCE", TokenType.SetSymmetricDiff],
-  ["schema", TokenType.KwSchema],
-  ["data", TokenType.KwData],
   ["EMPTY", TokenType.KwEmpty],
   ["include", TokenType.Include],
   ["as", TokenType.As],

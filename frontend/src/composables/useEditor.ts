@@ -2,7 +2,6 @@ import { ref, computed, watch } from 'vue';
 import LZString from 'lz-string';
 import { examples } from '@/examples';
 
-const DEFAULT_CODE = examples[0]?.content || "";
 
 const SESSION_FILES_KEY = 'xcx_session_files';
 const SELECTED_FILE_KEY = 'xcx_selected_file';
@@ -34,7 +33,23 @@ const getInitialFiles = (): Record<string, string> => {
     console.error('Failed to restore session files from localStorage', e);
   }
 
-  return { 'main.xcx': DEFAULT_CODE };
+  return {
+    'README.md': `# XCX Project
+
+This is the basic project structure:
+- \`src/main.xcx\`: The main entry point.
+- \`README.md\`: This file.
+
+Documentation can be found below:
+- Official Documentation: http://xcxlang.com/docs/index.html
+- Playground: https://xcxlang.com/
+`,
+    'src/main.xcx': `--- src/main.xcx
+--- Basic XCX template project
+
+>! "Hello World!";
+`
+  };
 };
 
 const getInitialSelectedFile = (files: Record<string, string>): string => {
@@ -46,15 +61,43 @@ const getInitialSelectedFile = (files: Record<string, string>): string => {
   } catch (e) {
     // ignore
   }
-  return Object.keys(files)[0] ?? 'main.xcx';
+  return files['src/main.xcx'] ? 'src/main.xcx' : Object.keys(files)[0] ?? 'src/main.xcx';
+};
+
+const getInitialFolders = (files: Record<string, string>): string[] => {
+  const foldersSet = new Set<string>();
+  for (const file of Object.keys(files)) {
+    const parts = file.split('/');
+    let current = '';
+    for (let i = 0; i < parts.length - 1; i++) {
+      current = current ? `${current}/${parts[i]}` : parts[i]!;
+      foldersSet.add(current);
+    }
+  }
+
+  try {
+    const saved = localStorage.getItem('xcx_session_folders');
+    if (saved) {
+      const parsed = JSON.parse(saved) as string[];
+      if (Array.isArray(parsed)) {
+        parsed.forEach(f => foldersSet.add(f));
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+  return Array.from(foldersSet);
 };
 
 const _initialFiles = getInitialFiles();
 
 const sessionFiles = ref<Record<string, string>>(_initialFiles);
+const sessionFolders = ref<string[]>(getInitialFolders(_initialFiles));
 const selectedFile = ref<string>(getInitialSelectedFile(_initialFiles));
-const entryPoint = ref<string>(localStorage.getItem('xcx_entry_point') || getInitialSelectedFile(_initialFiles));
+const entryPoint = ref<string>(localStorage.getItem('xcx_entry_point') || (_initialFiles['src/main.xcx'] ? 'src/main.xcx' : Object.keys(_initialFiles)[0] ?? 'src/main.xcx'));
+const isExplorerOpen = ref<boolean>(localStorage.getItem('xcx_is_explorer_open') !== 'false');
 
+watch(isExplorerOpen, (v) => localStorage.setItem('xcx_is_explorer_open', String(v)));
 watch(entryPoint, (v) => localStorage.setItem('xcx_entry_point', v));
 
 // Persist session files on every change (debounced via watch deep)
@@ -65,6 +108,18 @@ watch(
       localStorage.setItem(SESSION_FILES_KEY, JSON.stringify(newVal));
     } catch (e) {
       console.error('Failed to persist session files', e);
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  sessionFolders,
+  (newVal) => {
+    try {
+      localStorage.setItem('xcx_session_folders', JSON.stringify(newVal));
+    } catch (e) {
+      console.error('Failed to persist session folders', e);
     }
   },
   { deep: true }
@@ -141,6 +196,107 @@ if (typeof document !== 'undefined') {
 export function useEditor() {
   const files = computed(() => examples.map(e => e.name));
 
+  const createFile = (path: string, fileContent?: string) => {
+    if (!path) return;
+    const cleanPath = path.replace(/\\/g, '/');
+    const parts = cleanPath.split('/');
+    let current = '';
+    for (let i = 0; i < parts.length - 1; i++) {
+      current = current ? `${current}/${parts[i]}` : parts[i]!;
+      if (!sessionFolders.value.includes(current)) {
+        sessionFolders.value.push(current);
+      }
+    }
+    const contentVal = fileContent !== undefined ? fileContent : `--- ${parts[parts.length - 1]}\n`;
+    sessionFiles.value[cleanPath] = contentVal;
+    selectedFile.value = cleanPath;
+  };
+
+  const createFolder = (path: string) => {
+    if (!path) return;
+    const cleanPath = path.replace(/\\/g, '/');
+    if (!sessionFolders.value.includes(cleanPath)) {
+      sessionFolders.value.push(cleanPath);
+    }
+    const parts = cleanPath.split('/');
+    let current = '';
+    for (let i = 0; i < parts.length - 1; i++) {
+      current = current ? `${current}/${parts[i]}` : parts[i]!;
+      if (!sessionFolders.value.includes(current)) {
+        sessionFolders.value.push(current);
+      }
+    }
+  };
+
+  const deleteFile = (path: string) => {
+    delete sessionFiles.value[path];
+    if (selectedFile.value === path) {
+      const remaining = Object.keys(sessionFiles.value);
+      if (remaining.length > 0) {
+        selectedFile.value = remaining[0]!;
+      } else {
+        createFile('main.xcx', '--- main.xcx\n');
+      }
+    }
+    if (entryPoint.value === path) {
+      entryPoint.value = selectedFile.value;
+    }
+  };
+
+  const deleteFolder = (path: string) => {
+    const cleanPath = path.replace(/\\/g, '/');
+    const prefix = cleanPath + '/';
+    sessionFolders.value = sessionFolders.value.filter(
+      f => f !== cleanPath && !f.startsWith(prefix)
+    );
+    for (const file of Object.keys(sessionFiles.value)) {
+      if (file.startsWith(prefix) || file === cleanPath) {
+        deleteFile(file);
+      }
+    }
+  };
+
+  const renameFile = (oldPath: string, newPath: string) => {
+    if (oldPath === newPath) return;
+    const fileContent = sessionFiles.value[oldPath] || '';
+    delete sessionFiles.value[oldPath];
+    createFile(newPath, fileContent);
+    if (selectedFile.value === oldPath) {
+      selectedFile.value = newPath;
+    }
+    if (entryPoint.value === oldPath) {
+      entryPoint.value = newPath;
+    }
+  };
+
+  const renameFolder = (oldPath: string, newPath: string) => {
+    if (oldPath === newPath) return;
+    const oldPrefix = oldPath + '/';
+    const newPrefix = newPath + '/';
+
+    sessionFolders.value = sessionFolders.value.map(f => {
+      if (f === oldPath) return newPath;
+      if (f.startsWith(oldPrefix)) {
+        return newPrefix + f.slice(oldPrefix.length);
+      }
+      return f;
+    });
+
+    for (const [file, valContent] of Object.entries(sessionFiles.value)) {
+      if (file.startsWith(oldPrefix)) {
+        const renamedFile = newPrefix + file.slice(oldPrefix.length);
+        delete sessionFiles.value[file];
+        sessionFiles.value[renamedFile] = valContent;
+        if (selectedFile.value === file) {
+          selectedFile.value = renamedFile;
+        }
+        if (entryPoint.value === file) {
+          entryPoint.value = renamedFile;
+        }
+      }
+    }
+  };
+
   const shareUrl = () => {
     const json = JSON.stringify(sessionFiles.value);
     const compressed = LZString.compressToEncodedURIComponent(json);
@@ -154,6 +310,8 @@ export function useEditor() {
   return {
     content,
     sessionFiles,
+    sessionFolders,
+    isExplorerOpen,
     cursorLine,
     cursorColumn,
     selectedFile,
@@ -166,5 +324,11 @@ export function useEditor() {
     vimMode,
     lineNumbers,
     shareUrl,
+    createFile,
+    createFolder,
+    deleteFile,
+    deleteFolder,
+    renameFile,
+    renameFolder,
   };
 }
