@@ -27,6 +27,14 @@ body {
   transition: background 0.25s ease, color 0.25s ease;
 }
 
+/* Kill all transitions while the theme is switching so every element
+   recolors in the same frame instead of fading at different rates. */
+[data-theme-switching] *,
+[data-theme-switching] *::before,
+[data-theme-switching] *::after {
+  transition: none !important;
+}
+
 /* Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;

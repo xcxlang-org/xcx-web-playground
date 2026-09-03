@@ -1,9 +1,10 @@
 import { ref } from 'vue';
 import type { TerminalLine, TerminalCommand, TerminalLineType } from '@/types';
 import { useInterpreter } from './useInterpreter';
+import { XCX_LANGUAGE_VERSION, PLAYGROUND_VERSION } from '@/config/version';
 
 const lines = ref<TerminalLine[]>([
-  { id: crypto.randomUUID(), content: 'xcx 4.2', type: 'info', timestamp: Date.now() },
+  { id: crypto.randomUUID(), content: `xcx ${XCX_LANGUAGE_VERSION}`, type: 'info', timestamp: Date.now() },
   { id: crypto.randomUUID(), content: "Type '!help' for available commands.", type: 'info', timestamp: Date.now() },
 ]);
 
@@ -36,6 +37,7 @@ export function useTerminal() {
       '  !clear         Clear the terminal screen',
       '  !exit          Exit the interactive mode',
       '  !stop          Stop the currently running program',
+      '  !version, !v   Show playground and language version',
       '',
       'BASIC SYNTAX:',
       '  type: name = value;       Declare a variable (e.g., i: age = 25;)',
@@ -82,10 +84,15 @@ export function useTerminal() {
 
   const wrapRunCode = (source: string, vfs: Record<string, string> = {}) => {
     const startTime = performance.now();
+    let failed = false;
     _runCode(source, vfs, {
       onOutput: (line: string) => addLine(line, 'output'),
-      onError: (msg: string) => addLine(msg, 'error'),
+      onError: (msg: string) => {
+        failed = true;
+        addLine(msg, 'error');
+      },
       onDone: () => {
+        if (failed) return;
         const elapsed = (performance.now() - startTime).toFixed(2);
         addLine(`✓ execution finished in ${elapsed}ms`, 'success');
       },
@@ -133,8 +140,9 @@ export function useTerminal() {
       case '!exit':
         addLine('exiting interactive mode...', 'info');
         break;
-      case 'version':
-        addLine('xcx 4.2', 'info');
+      case '!version':
+      case '!v':
+        addLine(`xcx playground v${PLAYGROUND_VERSION} · language ${XCX_LANGUAGE_VERSION}`, 'info');
         break;
       case '!stop':
         stopCode();

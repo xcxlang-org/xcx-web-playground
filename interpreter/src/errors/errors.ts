@@ -8,8 +8,6 @@ export class XcxError extends Error {
   ) {
     super(message);
     this.name = this.constructor.name;
-    // Nie formatujemy tu na sztywno do metody format(), tylko przechowujemy dane.
-    // ANSI format przejdzie w main() korzystając z formatter.ts
   }
 
   format(): string {

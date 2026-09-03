@@ -14,6 +14,7 @@ export default {
         text: {
           DEFAULT: 'var(--text)',
           dim: 'var(--text-dim)',
+          bright: 'var(--text-bright)',
         },
         accent: {
           DEFAULT: 'var(--accent)',
@@ -36,6 +37,7 @@ export default {
         terminal: {
           bg: 'var(--terminal-bg)',
           text: 'var(--terminal-text)',
+          dim: 'var(--terminal-dim)',
           prompt: 'var(--terminal-prompt)',
         },
       },

@@ -5,6 +5,8 @@
   --bg-tertiary: #1a1a1a;
   --text: #f0f0f0;
   --text-dim: #888888;
+  --text-bright: #ffffff;
+  --code-text: #f0f0f0;
   --accent: #e63946;
   --accent-dim: #e6394633;
   --border: #222222;
@@ -20,33 +22,43 @@
   --operator: #70c4ce;
   --terminal-bg: #0d0d0d;
   --terminal-text: #f0f0f0;
+  --terminal-dim: #888888;
   --terminal-prompt: #e63946;
   --scrollbar: #333333;
   --scrollbar-track: #111111;
 }
 
+/* Light theme — matches the xcx-site palette (cream / charcoal / red / maroon).
+   Editor stays light "paper" with red-forward syntax; terminal gets a subtle
+   maroon tint so it reads as a console without a heavy dark slab. */
 [data-theme="light"] {
-  --bg: #ffffff;
-  --bg-secondary: #f5f5f5;
-  --bg-tertiary: #eeeeee;
-  --text: #111111;
-  --text-dim: #777777;
-  --accent: #e63946;
-  --accent-dim: #e6394622;
-  --border: #dddddd;
-  --code-bg: #fafafa;
-  --line-num: #cccccc;
-  --active-line: #f0f0f0;
-  --keyword: #e63946;
-  --string: #c47a2a;
-  --comment: #aaaaaa;
-  --fn: #e63946;
-  --number: #c47a2a;
-  --type: #111111;
-  --operator: #e63946;
-  --terminal-bg: #fafafa;
-  --terminal-text: #111111;
-  --terminal-prompt: #e63946;
-  --scrollbar: #cccccc;
-  --scrollbar-track: #eeeeee;
+  --bg: #fff6e5;                          /* cream */
+  --bg-secondary: #f3ebda;                /* cream-muted */
+  --bg-tertiary: #e5ddce;                 /* cream-alt */
+  --text: #2d3135;                        /* charcoal */
+  --text-dim: #7a6f63;                    /* warm taupe */
+  --text-bright: #1e2124;
+  --code-text: #2d3135;                   /* charcoal */
+  --accent: #a21c1c;                      /* red */
+  --accent-dim: rgba(162, 28, 28, 0.12);  /* red-12 */
+  --border: rgba(58, 26, 26, 0.15);       /* table-border */
+
+  --code-bg: #fff6e5;                     /* same as bg — editor blends in, no bright slab */
+  --line-num: #c4b49e;
+  --active-line: rgba(162, 28, 28, 0.06); /* red-08 */
+  --keyword: #a21c1c;                     /* red */
+  --string: #4a7a3d;
+  --comment: #8f7f74;
+  --fn: #a65e2e;
+  --number: #b05c1a;
+  --type: #2e6e9e;
+  --operator: #5b4a3f;
+
+  --terminal-bg: rgba(58, 26, 26, 0.06);  /* faint maroon tint over cream */
+  --terminal-text: #3e322b;               /* deep warm brown — readable console text */
+  --terminal-dim: #6b5b4e;                /* secondary console text */
+  --terminal-prompt: #a21c1c;             /* red */
+
+  --scrollbar: #c9bba8;
+  --scrollbar-track: #f3ebda;
 }

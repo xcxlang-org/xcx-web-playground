@@ -4,12 +4,12 @@ import { tags as t } from '@lezer/highlight';
 
 export const xcxHighlightStyle = HighlightStyle.define([
     { tag: t.keyword, color: 'var(--keyword)' },
-    { tag: [t.name, t.deleted, t.character, t.macroName], color: 'var(--text)' },
+    { tag: [t.name, t.deleted, t.character, t.macroName], color: 'var(--code-text)' },
     { tag: [t.propertyName], color: 'var(--fn)' },
     { tag: [t.processingInstruction, t.string, t.inserted], color: 'var(--string)' },
     { tag: [t.function(t.variableName), t.function(t.propertyName)], color: 'var(--fn)' },
     { tag: [t.color, t.constant(t.name), t.standard(t.name)], color: 'var(--keyword)' },
-    { tag: [t.definition(t.name), t.separator], color: 'var(--text)' },
+    { tag: [t.definition(t.name), t.separator], color: 'var(--code-text)' },
     { tag: [t.typeName, t.className, t.number, t.changed, t.annotation, t.modifier, t.self, t.namespace], color: 'var(--type)' },
     { tag: [t.operator, t.operatorKeyword, t.url, t.escape, t.regexp, t.link, t.special(t.string)], color: 'var(--operator)' },
     { tag: [t.meta, t.comment], color: 'var(--comment)', fontStyle: 'italic' },
@@ -27,7 +27,7 @@ export const createXcxEditorTheme = (fontSize: string, fontFamily: string) => Ed
         fontSize: `${fontSize}px`,
         fontFamily: fontFamily,
         lineHeight: '1.5',
-        color: 'var(--text)',
+        color: 'var(--code-text)',
         backgroundColor: 'var(--code-bg)',
     },
     '&.cm-editor, &.cm-focused': {
@@ -80,18 +80,18 @@ export const createXcxEditorTheme = (fontSize: string, fontFamily: string) => Ed
     '.cm-content .tok-number': { color: 'var(--number)' },
     '.cm-content .tok-comment': { color: 'var(--comment)', fontStyle: 'italic' },
     '.cm-content .tok-typeName': { color: 'var(--type)' },
-    '.cm-content .tok-variableName': { color: 'var(--text)' },
+    '.cm-content .tok-variableName': { color: 'var(--code-text)' },
     '.cm-content .tok-operator': { color: 'var(--operator)' },
     '.cm-content .tok-atom': { color: 'var(--keyword)' },
     '.cm-content .tok-builtin': { color: 'var(--fn)' },
     '.cm-selectionBackground': {
-        background: 'rgba(230, 57, 70, 0.35) !important',
+        background: 'rgba(162, 28, 28, 0.25) !important',
     },
     '&.cm-focused .cm-selectionBackground': {
-        background: 'rgba(230, 57, 70, 0.35) !important',
+        background: 'rgba(162, 28, 28, 0.25) !important',
     },
     '::selection': {
-        background: 'rgba(230, 57, 70, 0.35) !important',
+        background: 'rgba(162, 28, 28, 0.25) !important',
     },
     '.cm-cursor': {
         borderLeftColor: 'var(--accent)',

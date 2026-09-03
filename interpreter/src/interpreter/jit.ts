@@ -2,6 +2,7 @@ import { ASTNode, ArrayMethodCallNode, CallExprNode, ReturnNode } from "../parse
 import { Environment } from "./environment";
 import { RuntimeValue, makeInt, makeFloat, makeStr, makeBool, makeDate } from "./values";
 import { Interpreter } from "./interpreter";
+import { RuntimeError } from "../errors/errors";
 import { perfStart } from "./eval/expressions";
 
 export interface JITResult {
@@ -54,7 +55,14 @@ export function compileLoopToJIT(
 
         return {
             runner: (locals: Record<string, any>, print: (v: any) => void, wait: (ms: number) => void, perf: any, call: any) => {
-                runner(locals, print, wait, perf, call, jitMul, jitMod, jitS, jitI, jitF, jitB);
+                try {
+                    runner(locals, print, wait, perf, call, jitMul, jitMod, jitS, jitI, jitF, jitB);
+                } catch (e) {
+                    if (e instanceof RangeError && /call stack|recursion/i.test(e.message)) {
+                        throw new RuntimeError("Stack overflow: too much recursion", 1);
+                    }
+                    throw e;
+                }
             },
             externalVars
         };
@@ -149,7 +157,7 @@ function collectVariables(node: ASTNode, vars: Set<string>): void {
     }
 }
 
-function transpile(node: ASTNode | undefined, declaredInLoop: Set<string>, currentFunctionName?: string): string {
+function transpile(node: ASTNode, declaredInLoop: Set<string>, currentFunctionName?: string): string {
     if (!node) return "";
     switch (node.kind) {
         case "Literal":
@@ -263,11 +271,11 @@ function transpile(node: ASTNode | undefined, declaredInLoop: Set<string>, curre
             const arr = declaredInLoop.has((node as ArrayMethodCallNode).arrayName) ? (node as ArrayMethodCallNode).arrayName : `__jit_locals.${(node as ArrayMethodCallNode).arrayName}`;
             switch ((node as ArrayMethodCallNode).method) {
                 case "push":
-                    return `${arr}.push(${transpile((node as ArrayMethodCallNode).args[0], declaredInLoop, currentFunctionName)})`;
+                    return `${arr}.push(${transpile((node as ArrayMethodCallNode).args[0]!, declaredInLoop, currentFunctionName)})`;
                 case "get":
-                    return `${arr}[${transpile((node as ArrayMethodCallNode).args[0], declaredInLoop, currentFunctionName)}]`;
+                    return `${arr}[${transpile((node as ArrayMethodCallNode).args[0]!, declaredInLoop, currentFunctionName)}]`;
                 case "update":
-                    return `${arr}[${transpile((node as ArrayMethodCallNode).args[0], declaredInLoop, currentFunctionName)}] = ${transpile((node as ArrayMethodCallNode).args[1], declaredInLoop, currentFunctionName)}`;
+                    return `${arr}[${transpile((node as ArrayMethodCallNode).args[0]!, declaredInLoop, currentFunctionName)}] = ${transpile((node as ArrayMethodCallNode).args[1]!, declaredInLoop, currentFunctionName)}`;
                 case "count":
                 case "size":
                     return `${arr}.length`;
@@ -293,7 +301,7 @@ function transpile(node: ASTNode | undefined, declaredInLoop: Set<string>, curre
         }
         case "CallExpr": {
             if (["s", "i", "f", "b"].includes((node as CallExprNode).callee)) {
-                return `__jit_${(node as CallExprNode).callee}(${transpile((node as CallExprNode).args[0], declaredInLoop, currentFunctionName)})`;
+                return `__jit_${(node as CallExprNode).callee}(${transpile((node as CallExprNode).args[0]!, declaredInLoop, currentFunctionName)})`;
             }
             const argsStr = (node as CallExprNode).args.map(arg => transpile(arg, declaredInLoop, currentFunctionName)).join(", ");
             if ((node as CallExprNode).callee === currentFunctionName) {
@@ -403,8 +411,17 @@ return function ${name}(${paramList}) {
 
         const jitFn = factory(jitS, jitI, jitF, jitB, perfHelper, printHelper, waitHelper, callHelper, localsHelper, jitMul, jitMod);
 
+        const declLine = (body[0] as { line?: number } | undefined)?.line ?? 1;
         return (args: any[]) => {
-            const rawResult = jitFn(...args);
+            let rawResult: any;
+            try {
+                rawResult = jitFn(...args);
+            } catch (e) {
+                if (e instanceof RangeError && /call stack|recursion/i.test(e.message)) {
+                    throw new RuntimeError(`Stack overflow: too much recursion in '${name}()'`, declLine);
+                }
+                throw e;
+            }
             if (returnType === "int") return makeInt(Math.trunc(rawResult));
             if (returnType === "float") return makeFloat(Number(rawResult));
             if (returnType === "bool") return makeBool(Boolean(rawResult));
@@ -429,7 +446,10 @@ export function executeJITCall(i: Interpreter, calleeName: string, args: any[]):
     const fn = (i as any).funcs.get(calleeName);
     if (fn) {
         if (fn.jitRunner) {
-            return fn.jitRunner(runtimeArgs).value;
+            // jitRunner expects raw JS values (see interpreter.ts evalCallExpr),
+            // not wrapped RuntimeValues — wrapping here broke the JIT base-case
+            // comparisons and caused infinite recursion (stack overflow).
+            return fn.jitRunner(args).value;
         } else {
             const node: CallExprNode = {
                 kind: "CallExpr",

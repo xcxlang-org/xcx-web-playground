@@ -15,6 +15,7 @@ import IconGithub from '@/components/ui/icons/IconGithub.vue';
 import IconX from '@/components/ui/icons/IconX.vue';
 
 import { useEditor } from '@/composables/useEditor';
+import { PLAYGROUND_VERSION } from '@/config/version';
 
 const isOpen = defineModel<boolean>('isOpen', { default: false });
 const isSettingsOpen = ref(false);
@@ -201,7 +202,7 @@ const menuItems = [
         <!-- Footer -->
         <div class="px-4 py-3 border-t border-border">
           <div class="text-text-dim text-xs">
-            xcx playground v2.0.0
+            xcx playground v{{ PLAYGROUND_VERSION }}
           </div>
         </div>
       </div>

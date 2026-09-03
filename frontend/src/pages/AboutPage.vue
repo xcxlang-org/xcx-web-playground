@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router';
 import ThemeToggle from '@/components/ui/ThemeToggle.vue';
 import IconChevronLeft from '@/components/ui/icons/IconChevronLeft.vue';
+import { XCX_LANGUAGE_VERSION as version, PLAYGROUND_VERSION as playgroundVersion, BUILD_DATE as buildDate } from '@/config/version';
 
 const router = useRouter();
 
@@ -9,9 +10,6 @@ const openExternalWarning = (url: string) => {
   window.open(url, '_blank', 'noopener,noreferrer');
 };
 
-const version = '4.2';
-const interpreterVersion = '2.0.0';
-const buildDate = 'June 2026';
 const stack = [
   { name: 'TypeScript', note: 'interpreter & logic' },
   { name: 'Vue 3', note: 'playground UI' },
@@ -45,7 +43,7 @@ const links = [
 
     <section class="px-6 pt-16 pb-12 max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-[1.6fr_1fr] gap-12 lg:gap-20 items-start">
       <div>
-        <div class="text-text-dim text-sm font-mono mb-6 tracking-wider uppercase">xcx playground</div>
+        <div class="text-text-dim text-sm font-mono mb-6 tracking-wider uppercase">xcx playground v{{ playgroundVersion }}</div>
         <h1 class="text-5xl lg:text-6xl font-semibold mb-5 tracking-tight">
           <span class="text-accent">xcx</span> {{ version }}
         </h1>
@@ -81,12 +79,12 @@ const links = [
         </ul>
         <div class="mt-6 pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center gap-4 text-xs">
           <div class="flex items-center gap-2">
-            <span class="text-text-dim">XCX Target Version:</span>
-            <span class="font-mono text-text bg-bg px-2 py-0.5 rounded border border-border">v{{ version }}</span>
+            <span class="text-text-dim">Playground:</span>
+            <span class="font-mono text-text bg-bg px-2 py-0.5 rounded border border-border">v{{ playgroundVersion }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-text-dim">Playground Interpreter:</span>
-            <span class="font-mono text-text bg-bg px-2 py-0.5 rounded border border-border">v{{ interpreterVersion }}</span>
+            <span class="text-text-dim">XCX Target Version:</span>
+            <span class="font-mono text-text bg-bg px-2 py-0.5 rounded border border-border">v{{ version }}</span>
           </div>
         </div>
       </div>

@@ -71,7 +71,7 @@ The toolbar's Share button compresses the current editor session (all files) wit
 
 ## Limitations
 
-The playground interpreter targets XCX 4.2 and does not support:
+The playground interpreter targets XCX 4.3 and does not support:
 
 - `http` / `serve:` module
 - `database:` block

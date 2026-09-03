@@ -5,7 +5,17 @@ const STORAGE_KEY = 'xcx-theme-preference';
 
 const mode = ref<ThemeMode>('dark');
 
+let suppressTimer: ReturnType<typeof setTimeout> | undefined;
+
 const setMode = (newMode: ThemeMode): void => {
+  // Recolor instantly: without this, elements with CSS transitions (topbar
+  // buttons, body background) fade to the new palette at different speeds and
+  // briefly mismatch the rest of the UI after a theme switch.
+  const root = document.documentElement;
+  root.setAttribute('data-theme-switching', '');
+  clearTimeout(suppressTimer);
+  suppressTimer = setTimeout(() => root.removeAttribute('data-theme-switching'), 300);
+
   mode.value = newMode;
   document.documentElement.setAttribute('data-theme', newMode);
   localStorage.setItem(STORAGE_KEY, newMode);

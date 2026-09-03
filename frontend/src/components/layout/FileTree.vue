@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import { useEditor } from '@/composables/useEditor';
+import BaseModal from '@/components/ui/modals/BaseModal.vue';
 
 const {
   sessionFiles,
@@ -227,25 +228,50 @@ const submitRename = (item: TreeItem) => {
   inputName.value = '';
 };
 
+interface ConfirmDialog {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+}
+
+const confirmDialog = ref<ConfirmDialog | null>(null);
+const isConfirmOpen = ref(false);
+
+const requestConfirm = (title: string, message: string, confirmLabel: string, onConfirm: () => void): void => {
+  confirmDialog.value = { title, message, confirmLabel, onConfirm };
+  isConfirmOpen.value = true;
+};
+
+const acceptConfirm = (): void => {
+  confirmDialog.value?.onConfirm();
+  isConfirmOpen.value = false;
+};
+
 const handleDeleteClick = (item: TreeItem, event: Event) => {
   event.stopPropagation();
-  if (confirm(`Are you sure you want to delete ${item.isFolder ? 'folder' : 'file'} "${item.name}"?`)) {
-    if (item.isFolder) {
-      deleteFolder(item.path);
-    } else {
-      deleteFile(item.path);
-    }
-  }
+  const kind = item.isFolder ? 'folder' : 'file';
+  requestConfirm(
+    `Delete ${kind}`,
+    `Are you sure you want to delete ${kind} "${item.name}"? This cannot be undone.`,
+    'Delete',
+    () => (item.isFolder ? deleteFolder(item.path) : deleteFile(item.path))
+  );
 };
 
 const resetWorkspace = () => {
-  if (confirm('Are you sure you want to reset workspace to default? All custom files will be lost.')) {
-    localStorage.removeItem('xcx_session_files');
-    localStorage.removeItem('xcx_session_folders');
-    localStorage.removeItem('xcx_selected_file');
-    localStorage.removeItem('xcx_entry_point');
-    window.location.reload();
-  }
+  requestConfirm(
+    'Reset workspace',
+    'Are you sure you want to reset the workspace to default? All custom files will be lost.',
+    'Reset',
+    () => {
+      localStorage.removeItem('xcx_session_files');
+      localStorage.removeItem('xcx_session_folders');
+      localStorage.removeItem('xcx_selected_file');
+      localStorage.removeItem('xcx_entry_point');
+      window.location.reload();
+    }
+  );
 };
 </script>
 
@@ -433,5 +459,28 @@ const resetWorkspace = () => {
         </div>
       </div>
     </div>
+
+    <!-- Confirm dialog (styled, replaces native confirm()) -->
+    <BaseModal v-model:is-open="isConfirmOpen" :title="confirmDialog?.title ?? ''" width-class="max-w-sm">
+      <p class="px-4 py-4 text-sm text-text-dim">{{ confirmDialog?.message }}</p>
+      <template #footer>
+        <div class="flex justify-end gap-2 w-full">
+          <button
+            type="button"
+            class="px-3 py-1.5 text-xs text-text-dim hover:text-text transition-colors"
+            @click="isConfirmOpen = false"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1.5 text-xs bg-accent text-white rounded hover:opacity-90 transition-opacity"
+            @click="acceptConfirm"
+          >
+            {{ confirmDialog?.confirmLabel }}
+          </button>
+        </div>
+      </template>
+    </BaseModal>
   </div>
 </template>

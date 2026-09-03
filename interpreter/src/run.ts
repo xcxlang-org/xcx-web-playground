@@ -35,6 +35,9 @@ export function runSource(
     } catch (err: any) {
         if (err.format) return { output, error: err.format() }; // XcxError
         if (err instanceof HaltFatalSignal) return { output, error: `halt.fatal: ${err.message}` };
+        if (err instanceof RangeError && /call stack|recursion/i.test(err.message)) {
+            return { output, error: "RuntimeError: Stack overflow: too much recursion" };
+        }
         return { output, error: err instanceof Error ? err.stack || err.message : String(err) };
     }
 }

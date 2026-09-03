@@ -29,9 +29,9 @@ watch(() => props.lines, () => scrollToBottom(), { deep: true });
       :key="line.id"
       class="mb-0.5"
       :class="{
-        'text-text-dim': line.type === 'info',
+        'text-terminal-dim': line.type === 'info',
         'text-accent': line.type === 'error',
-        'text-emerald-500': line.type === 'success',
+        'text-emerald-600': line.type === 'success',
       }"
     >
       <span v-if="line.type === 'prompt'" class="text-terminal-prompt select-none">❯ </span>

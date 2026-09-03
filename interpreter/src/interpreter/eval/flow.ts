@@ -451,7 +451,6 @@ export function evalTerminalCommand(i: Interpreter, node: TerminalCommandNode, e
 export function evalHalt(i: Interpreter, node: HaltNode, env: Environment): RuntimeValue {
     const msgVal = i.evalNode(node.message, env);
     const msg = displayValue(msgVal);
-    // Usuwamy i.output(`halt.${node.level}: ${msg}`);
     if (node.level === "alert") {
         return makeStr("");
     }

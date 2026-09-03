@@ -31,7 +31,7 @@ const handleTabClose = (name: string, ev: MouseEvent) => {
         :key="name"
         class="group relative flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium whitespace-nowrap border-r border-border transition-colors flex-shrink-0"
         :class="selectedFile === name
-          ? 'bg-code-bg text-text border-t-2 border-t-accent -mt-px'
+          ? 'bg-code-bg text-code-text border-t-2 border-t-accent -mt-px'
           : 'text-text-dim hover:bg-bg-tertiary hover:text-text'"
         @click="selectedFile = name"
         :title="name"

@@ -29,7 +29,7 @@ const onHistoryNav = (dir: 'up' | 'down'): void => {
 
 <template>
   <div class="flex flex-col h-full">
-    <div class="flex items-center justify-between px-3.5 h-8.5 bg-bg-secondary border-b border-border">
+    <div class="flex items-center justify-between px-3.5 h-[34px] bg-bg-secondary border-b border-border">
       <span class="text-[11px] font-semibold uppercase tracking-wider text-text-dim">Terminal</span>
       <IconButton title="Clear" @click="clear">
         <IconTrash class="w-3.5 h-3.5" />

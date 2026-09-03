@@ -33,7 +33,6 @@ export function formatCompilerError(err: XcxError, sourceLines: string[]): strin
     const col = err.col || 1;
     let len = err.len || 1;
 
-    // Zapobieganie błędom przy zbyt długim podkreśleniu (poza końcem linii)
     if (col - 1 + len > rawLine.length + 1) {
         len = Math.max(1, rawLine.length - col + 1);
     }
