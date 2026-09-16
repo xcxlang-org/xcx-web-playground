@@ -30,7 +30,7 @@ export function parseIf(p: Parser): IfNode {
     const ifCond = p.parseExpr();
     p.expect(TokenType.RParen, "')'");
     p.expect(TokenType.Then, "'then'");
-    p.expect(TokenType.Semicolon, "';'");
+    p.optionalSemicolon();
 
     const ifBody = p.parseBlock();
     const elseifBranches: IfBranch[] = [];
@@ -42,18 +42,18 @@ export function parseIf(p: Parser): IfNode {
         const cond = p.parseExpr();
         p.expect(TokenType.RParen, "')'");
         p.expect(TokenType.Then, "'then'");
-        p.expect(TokenType.Semicolon, "';'");
+        p.optionalSemicolon();
         elseifBranches.push({ condition: cond, body: p.parseBlock() });
     }
 
     if (p.current().type === TokenType.Else) {
         p.consume();
-        p.expect(TokenType.Semicolon, "';'");
+        p.optionalSemicolon();
         elseBranch = p.parseBlock();
     }
 
     p.expect(TokenType.End, "'end'");
-    p.expect(TokenType.Semicolon, "';'");
+    p.optionalSemicolon();
 
     return { kind: "If", ifBranch: { condition: ifCond, body: ifBody }, elseifBranches, elseBranch, line: ifTok.line };
 }
@@ -89,10 +89,10 @@ export function parseWhile(p: Parser): WhileNode {
     const condition = p.parseExpr();
     p.expect(TokenType.RParen, "')'");
     p.expect(TokenType.Do, "'do'");
-    p.expect(TokenType.Semicolon, "';'");
+    p.optionalSemicolon();
     const body = p.parseBlock();
     p.expect(TokenType.End, "'end'");
-    p.expect(TokenType.Semicolon, "';'");
+    p.optionalSemicolon();
     return { kind: "While", condition, body, line: whileTok.line };
 }
 
@@ -113,17 +113,17 @@ export function parseFor(p: Parser): ForNode {
         }
 
         p.expect(TokenType.Do, "'do'");
-        p.expect(TokenType.Semicolon, "';'");
+        p.optionalSemicolon();
         const body = p.parseBlock();
         p.expect(TokenType.End, "'end'");
-        p.expect(TokenType.Semicolon, "';'");
+        p.optionalSemicolon();
         return { kind: "For", varName: varTok.value, start: startOrColl, end, step, body, line: forTok.line };
     } else {
         p.expect(TokenType.Do, "'do'");
-        p.expect(TokenType.Semicolon, "';'");
+        p.optionalSemicolon();
         const body = p.parseBlock();
         p.expect(TokenType.End, "'end'");
-        p.expect(TokenType.Semicolon, "';'");
+        p.optionalSemicolon();
         return { kind: "For", varName: varTok.value, collection: startOrColl, body, line: forTok.line };
     }
 }
@@ -182,7 +182,7 @@ export function parseFuncDeclaration(p: Parser): FuncDeclarationNode {
     p.expect(TokenType.LBrace, "'{'");
     const body = p.parseFuncBody();
     p.expect(TokenType.RBrace, "'}'");
-    p.expect(TokenType.Semicolon, "';'");
+    p.optionalSemicolon();
 
     return { kind: "FuncDeclaration", name: nameTok.value, params, returnType, body, line: funcTok.line };
 }

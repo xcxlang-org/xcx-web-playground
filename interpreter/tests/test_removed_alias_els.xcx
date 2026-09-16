@@ -1,0 +1,7 @@
+--- XCX 4.4: the 'els' alias was removed and must fail to parse ---
+i: k = 2;
+if (k == 99) then;
+    >! "no";
+els;
+    >! "els OK";
+end;

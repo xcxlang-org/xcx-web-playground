@@ -62,8 +62,8 @@ export enum TokenType {
   Input = "INPUT",    // >?
   If = "IF",       // if
   Then = "THEN",     // then
-  Elseif = "ELSEIF",   // elseif / elif / elf
-  Else = "ELSE",     // else / els
+  Elseif = "ELSEIF",   // elseif / elif
+  Else = "ELSE",     // else
   End = "END",      // end
   Func = "FUNC",     // func
   Return = "RETURN",   // return

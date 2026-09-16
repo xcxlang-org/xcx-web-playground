@@ -12,7 +12,10 @@ const INPUT_MOCKS: Record<string, string[]> = {
 
 // Configure tests expecting an intentional halt signal.
 const EXPECTED_HALTS: Record<string, string> = {
-    "test_halt.xcx": "halt.fatal"
+    "test_halt.xcx": "halt.fatal",
+    // XCX 4.4 removed the 'els' and 'elf' aliases — both must now fail to parse.
+    "test_removed_alias_els.xcx": "Unexpected token 'els'",
+    "test_removed_alias_elf.xcx": "Expected ';', got 'then'"
 };
 
 // Automated "golden" pattern base, defined inline to prevent file tree clutter.
@@ -244,6 +247,23 @@ const GOLDEN_OUTPUTS: Record<string, string[]> = {
     ],
     "test_float_arith_loop.xcx": [
         "[09] Float Arith: 250500250.00000003"
+    ],
+    "test_optional_semicolons.xcx": [
+        "hello from func",
+        "5",
+        "X is smaller than y",
+        "still works with semicolons",
+        "0",
+        "1",
+        "2",
+        "10",
+        "20",
+        "30",
+        "banana",
+        "2",
+        "Warsaw",
+        "3",
+        "ALL OPTIONAL SEMICOLON TESTS FINISHED"
     ]
 };
 
@@ -278,7 +298,7 @@ async function runAllTests() {
         .sort();
 
     console.log("==========================================");
-    console.log("  XCx 4.3 TEST RUNNER");
+    console.log("  XCx 4.4 TEST RUNNER");
     console.log("==========================================");
 
     const results: TestResult[] = [];

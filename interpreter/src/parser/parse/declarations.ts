@@ -146,7 +146,7 @@ export function parseArrayDeclaration(p: Parser): ArrayDeclarationNode {
             }
         }
         p.expect(TokenType.RBrace, "'}'");
-        p.expect(TokenType.Semicolon, "';'");
+        p.optionalSemicolon();
     }
 
     return { kind: "ArrayDeclaration", name: nameTok.value, elementType: elemType, elements, value, line: arrayTok.line };
@@ -248,7 +248,7 @@ export function parseTableDeclaration(p: Parser): TableDeclarationNode {
     }
 
     p.expect(TokenType.RBrace, "'}' to close table definition");
-    p.expect(TokenType.Semicolon, "';' after table definition");
+    p.optionalSemicolon();
 
     return { kind: "TableDeclaration", name: nameTok.value, columns, rows, line: nameTok.line };
 }
@@ -329,7 +329,7 @@ export function parseMapDeclaration(p: Parser): MapDeclarationNode {
     }
 
     p.expect(TokenType.RBrace, "'}' to close map definition");
-    p.expect(TokenType.Semicolon, "';' after map definition");
+    p.optionalSemicolon();
 
     return {
         kind: "MapDeclaration",
@@ -396,7 +396,7 @@ export function parseSetDeclaration(p: Parser): SetDeclarationNode {
     }
 
     p.expect(TokenType.RBrace, "'}'");
-    p.expect(TokenType.Semicolon, "';'");
+    p.optionalSemicolon();
     return { kind: "SetDeclaration", domain, name: nameTok.value, init, value: null, line };
 }
 

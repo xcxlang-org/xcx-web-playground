@@ -1,6 +1,12 @@
 # frontend
 
-Vue 3 + Vite playground UI for XCX.
+Vue 3 + Vite playground UI for XCX, targeting the **XCX 4.4** language (playground v2.2.0).
+
+---
+
+## Language version
+
+Version strings shown across the UI (statusbar, terminal banner, sidebar, About page) come from a single source: `src/config/version.ts` (`XCX_LANGUAGE_VERSION`, `PLAYGROUND_VERSION`, `BUILD_DATE`). Keep it in sync with `frontend/package.json` and `interpreter/package.json` — all three share one version. Release notes live in [`changelogs/`](../../changelogs/README.md).
 
 ---
 
@@ -22,11 +28,13 @@ frontend/src/
 ├── assets/css/         # Global styles, CSS variables (theme tokens)
 ├── components/
 │   ├── editor/         # CodeMirror integration, tab bar, skeleton
-│   ├── layout/         # Topbar, sidebar, status bar, workspace layout, modals
+│   ├── layout/         # Topbar, sidebar, FileTree, status bar, workspace layout, modals
 │   ├── terminal/       # Terminal panel, input, output
 │   └── ui/             # Shared primitives (IconButton, Skeleton, ThemeToggle, modals)
 ├── composables/        # useEditor, useTerminal, useLayout, useTheme, useExamples, useInterpreter
-├── config/editor/      # CodeMirror theme and highlight style
+├── config/
+│   ├── editor/         # CodeMirror theme and highlight style
+│   └── version.ts      # Single source of truth: XCX language + playground versions
 ├── examples.ts         # Built-in example programs
 ├── pages/              # PlaygroundPage, AboutPage
 ├── router/             # Vue Router (/, /about)

@@ -305,19 +305,6 @@ elif (k == 2) then;
   >! "elif OK";
 end;
 
---- Alias elf and els
-if (k == 99) then;
-  >! "no";
-elf (k == 2) then;
-  >! "elf OK";
-end;
-
-if (k == 99) then;
-  >! "no";
-els;
-  >! "els OK";
-end;
-
 --- Nested if
 i: v = 7;
 if (v > 0) then;

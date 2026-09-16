@@ -130,6 +130,12 @@ export class Parser {
     return this.consume();
   }
 
+  // XCX 4.4: semicolons at block boundaries (after then/do/else/end and
+  // closing braces of declarations) are optional.
+  public optionalSemicolon(): void {
+    if (this.current().type === TokenType.Semicolon) this.consume();
+  }
+
   // ── Delegated Helper Handlers ──────────────────────────────────────────────
   public parseExpr = () => parseExpr(this);
   public parseOr = () => parseOr(this);
